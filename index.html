@@ -1,0 +1,1230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pendo Packaging — POS & Inventory System</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+/* ─── RESET & ROOT ─────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --forest:   #163d26;
+  --green:    #1d5733;
+  --mid:      #2a7347;
+  --leaf:     #38955d;
+  --sage:     #7bbf96;
+  --mint:     #c8ead7;
+  --pale:     #edf7f1;
+  --gold:     #c8991f;
+  --gold-l:   #e2b83a;
+  --gold-p:   #fdf3d8;
+  --white:    #ffffff;
+  --off:      #f6f8f7;
+  --g50:      #f0f4f2;
+  --g100:     #dde6e1;
+  --g200:     #b8ccc2;
+  --g400:     #6f9080;
+  --g600:     #3a5a4a;
+  --ink:      #142219;
+  --danger:   #c0392b;
+  --warn:     #d97706;
+  --info:     #1a56db;
+  --r-sm: 8px; --r-md: 12px; --r-lg: 18px; --r-xl: 24px; --r-2xl: 32px;
+  --sh-sm: 0 1px 4px rgba(20,34,25,.08);
+  --sh-md: 0 4px 20px rgba(20,34,25,.10);
+  --sh-lg: 0 8px 40px rgba(20,34,25,.15);
+  --font: 'Plus Jakarta Sans', sans-serif;
+  --serif: 'Cormorant Garamond', Georgia, serif;
+  --sidebar: 228px;
+  --topbar: 58px;
+  --trans: .18s ease;
+}
+html, body { height: 100%; font-family: var(--font); background: var(--off); color: var(--ink); font-size: 14px; line-height: 1.5; overflow: hidden; }
+button { cursor: pointer; font-family: var(--font); border: none; background: none; }
+input, select, textarea { font-family: var(--font); border: none; outline: none; background: none; }
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-thumb { background: var(--g100); border-radius: 4px; }
+
+/* ─── LOGIN ─────────────────────────────────────────── */
+#login {
+  height: 100vh; display: flex; overflow: hidden;
+  background: var(--forest);
+}
+.login-art {
+  flex: 1; position: relative; overflow: hidden;
+  display: flex; flex-direction: column; justify-content: flex-end; padding: 56px;
+}
+.login-art::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse 80% 60% at 30% 40%, rgba(56,149,93,.35) 0%, transparent 70%),
+              radial-gradient(ellipse 50% 80% at 80% 80%, rgba(200,153,31,.15) 0%, transparent 60%);
+}
+.art-pattern {
+  position: absolute; inset: 0; opacity: .06;
+  background-image: repeating-linear-gradient(0deg, transparent, transparent 40px, rgba(255,255,255,.4) 40px, rgba(255,255,255,.4) 41px),
+                    repeating-linear-gradient(90deg, transparent, transparent 40px, rgba(255,255,255,.4) 40px, rgba(255,255,255,.4) 41px);
+}
+.login-brand {
+  display: flex; align-items: center; gap: 14px; margin-bottom: 48px; position: relative; z-index: 1;
+}
+.brand-icon {
+  width: 52px; height: 52px; background: var(--gold); border-radius: var(--r-md);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.brand-icon svg { width: 28px; height: 28px; fill: white; }
+.brand-name { font-family: var(--serif); font-size: 26px; color: white; font-weight: 600; line-height: 1; }
+.brand-tagline { font-size: 11px; color: rgba(255,255,255,.5); letter-spacing: 2.5px; text-transform: uppercase; margin-top: 5px; }
+.login-headline {
+  font-family: var(--serif); font-size: 54px; font-weight: 600; color: white;
+  line-height: 1.1; margin-bottom: 20px; position: relative; z-index: 1;
+}
+.login-headline em { color: var(--gold-l); font-style: italic; }
+.login-sub { font-size: 15px; color: rgba(255,255,255,.6); max-width: 360px; line-height: 1.7; position: relative; z-index: 1; }
+.login-stats {
+  display: flex; gap: 24px; margin-top: 48px; position: relative; z-index: 1;
+}
+.login-stat {
+  padding: 16px 20px; background: rgba(255,255,255,.07);
+  border: 1px solid rgba(255,255,255,.1); border-radius: var(--r-md);
+  backdrop-filter: blur(8px);
+}
+.login-stat-val { font-family: var(--serif); font-size: 26px; color: var(--gold-l); font-weight: 600; line-height: 1; }
+.login-stat-label { font-size: 11px; color: rgba(255,255,255,.5); margin-top: 4px; text-transform: uppercase; letter-spacing: 1px; }
+
+.login-form-wrap {
+  width: 440px; flex-shrink: 0; background: white;
+  display: flex; flex-direction: column; justify-content: center; padding: 56px 48px;
+}
+.login-form-wrap h2 { font-family: var(--serif); font-size: 30px; color: var(--green); margin-bottom: 6px; font-weight: 600; }
+.login-form-wrap > p { font-size: 13px; color: var(--g400); margin-bottom: 36px; }
+.form-field { margin-bottom: 18px; }
+.form-field label { display: block; font-size: 11px; font-weight: 700; color: var(--g400); text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 7px; }
+.form-field input, .form-field select {
+  width: 100%; padding: 11px 14px;
+  background: var(--g50); border: 1.5px solid var(--g100);
+  border-radius: var(--r-sm); font-size: 14px; color: var(--ink); transition: var(--trans);
+}
+.form-field input:focus, .form-field select:focus { border-color: var(--leaf); background: white; }
+.login-btn {
+  width: 100%; padding: 13px; background: var(--green); color: white;
+  border-radius: var(--r-md); font-size: 14px; font-weight: 700; letter-spacing: .3px;
+  transition: var(--trans); margin-top: 6px; display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.login-btn:hover { background: var(--mid); transform: translateY(-1px); box-shadow: var(--sh-md); }
+.login-btn:active { transform: translateY(0); }
+.quick-roles { margin-top: 28px; }
+.quick-roles p { font-size: 11px; color: var(--g200); margin-bottom: 10px; text-align: center; }
+.role-chips { display: flex; gap: 8px; justify-content: center; }
+.role-chip {
+  padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 600;
+  border: 1.5px solid var(--g100); color: var(--g400); cursor: pointer; transition: var(--trans);
+}
+.role-chip:hover, .role-chip.on { background: var(--green); color: white; border-color: var(--green); }
+
+/* ─── APP SHELL ──────────────────────────────────────── */
+#app { height: 100vh; display: none; }
+.shell { display: flex; height: 100vh; }
+
+/* ─── SIDEBAR ────────────────────────────────────────── */
+.sidebar {
+  width: var(--sidebar); background: var(--forest);
+  display: flex; flex-direction: column; flex-shrink: 0; overflow: hidden; position: relative;
+}
+.sidebar::after {
+  content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 200px;
+  background: linear-gradient(to top, rgba(200,153,31,.07), transparent); pointer-events: none;
+}
+.sb-logo {
+  padding: 20px 18px 16px; display: flex; align-items: center; gap: 10px;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+.sb-logo-icon {
+  width: 34px; height: 34px; background: var(--gold); border-radius: 9px;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.sb-logo-icon svg { width: 19px; height: 19px; fill: white; }
+.sb-logo-text { font-family: var(--serif); font-size: 18px; color: white; font-weight: 600; line-height: 1; }
+.sb-logo-sub { font-size: 9px; color: rgba(255,255,255,.4); letter-spacing: 2px; text-transform: uppercase; margin-top: 3px; }
+
+.sb-nav { flex: 1; padding: 14px 10px; overflow-y: auto; }
+.sb-section { font-size: 9px; font-weight: 700; color: rgba(255,255,255,.3); text-transform: uppercase; letter-spacing: 2px; padding: 12px 8px 6px; margin-top: 4px; }
+.nav-item {
+  display: flex; align-items: center; gap: 10px; padding: 9px 10px;
+  border-radius: var(--r-sm); color: rgba(255,255,255,.6); font-size: 13px; font-weight: 500;
+  cursor: pointer; transition: var(--trans); margin-bottom: 1px; position: relative;
+}
+.nav-item:hover { background: rgba(255,255,255,.08); color: white; }
+.nav-item.active {
+  background: rgba(255,255,255,.13); color: white; font-weight: 600;
+}
+.nav-item.active::before {
+  content: ''; position: absolute; left: 0; top: 25%; bottom: 25%;
+  width: 3px; background: var(--gold); border-radius: 0 3px 3px 0;
+}
+.nav-icon { width: 17px; height: 17px; flex-shrink: 0; opacity: .7; }
+.nav-item.active .nav-icon { opacity: 1; }
+.nb { margin-left: auto; background: var(--gold); color: var(--forest); font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 8px; }
+.nb.warn { background: #fde68a; color: #92400e; }
+
+.sb-footer {
+  padding: 14px 10px; border-top: 1px solid rgba(255,255,255,.08); position: relative; z-index: 1;
+}
+.sb-user {
+  display: flex; align-items: center; gap: 10px; padding: 8px 6px;
+  border-radius: var(--r-sm); cursor: pointer; transition: var(--trans);
+}
+.sb-user:hover { background: rgba(255,255,255,.07); }
+.sb-av {
+  width: 32px; height: 32px; border-radius: 50%; background: var(--gold);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 800; color: var(--forest); flex-shrink: 0;
+}
+.sb-uname { font-size: 12px; font-weight: 600; color: white; }
+.sb-urole { font-size: 10px; color: rgba(255,255,255,.45); }
+.logout-btn { margin-left: auto; color: rgba(255,255,255,.35); transition: var(--trans); }
+.logout-btn:hover { color: rgba(255,255,255,.7); }
+.logout-btn svg { width: 15px; height: 15px; }
+
+/* ─── MAIN ───────────────────────────────────────────── */
+.main { flex: 1; display: flex; flex-direction: column; min-width: 0; overflow: hidden; }
+.topbar {
+  height: var(--topbar); background: white; border-bottom: 1px solid var(--g100);
+  display: flex; align-items: center; padding: 0 24px; gap: 16px; flex-shrink: 0;
+  position: relative; z-index: 40;
+}
+.topbar-title { font-family: var(--serif); font-size: 22px; color: var(--green); font-weight: 600; }
+.topbar-search {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--g50); border: 1.5px solid var(--g100); border-radius: var(--r-sm);
+  padding: 7px 12px; transition: var(--trans);
+}
+.topbar-search:focus-within { border-color: var(--leaf); background: white; }
+.topbar-search input { font-size: 13px; color: var(--ink); width: 200px; }
+.topbar-search input::placeholder { color: var(--g200); }
+.topbar-search svg { width: 15px; height: 15px; color: var(--g200); flex-shrink: 0; }
+.topbar-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+.topbar-btn {
+  width: 34px; height: 34px; border-radius: var(--r-sm);
+  background: var(--g50); border: 1.5px solid var(--g100);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: var(--trans); position: relative;
+}
+.topbar-btn:hover { border-color: var(--leaf); background: var(--pale); }
+.topbar-btn svg { width: 16px; height: 16px; color: var(--g400); }
+.notif-pip { position: absolute; top: 5px; right: 5px; width: 6px; height: 6px; background: var(--gold); border-radius: 50%; border: 2px solid white; }
+.live-badge {
+  display: flex; align-items: center; gap: 6px;
+  padding: 5px 12px; background: var(--pale); border: 1.5px solid var(--mint);
+  border-radius: 20px; font-size: 11px; font-weight: 700; color: var(--green);
+}
+.live-dot { width: 6px; height: 6px; background: var(--leaf); border-radius: 50%; animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(.8)} }
+
+.page-content { flex: 1; overflow-y: auto; padding: 24px; }
+.page { display: none; animation: pageIn .22s ease; }
+.page.show { display: block; }
+@keyframes pageIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
+
+/* ─── SHARED COMPONENTS ─────────────────────────────── */
+.card {
+  background: white; border-radius: var(--r-lg); border: 1px solid var(--g100);
+  box-shadow: var(--sh-sm); overflow: hidden;
+}
+.card-head { padding: 18px 20px 0; }
+.card-body { padding: 20px; }
+.card-title { font-size: 14px; font-weight: 700; color: var(--ink); }
+.card-sub { font-size: 11px; color: var(--g400); margin-top: 2px; }
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 16px; border-radius: var(--r-sm); font-size: 13px; font-weight: 600;
+  transition: var(--trans); cursor: pointer; border: none;
+}
+.btn svg { width: 14px; height: 14px; }
+.btn-primary { background: var(--green); color: white; }
+.btn-primary:hover { background: var(--mid); box-shadow: var(--sh-sm); }
+.btn-secondary { background: white; color: var(--g600); border: 1.5px solid var(--g100); }
+.btn-secondary:hover { border-color: var(--leaf); color: var(--green); }
+.btn-gold { background: var(--gold); color: white; }
+.btn-gold:hover { background: var(--gold-l); }
+.badge { display: inline-block; padding: 3px 9px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+.badge-green { background: var(--pale); color: var(--green); }
+.badge-gold { background: var(--gold-p); color: #7a5a00; }
+.badge-red { background: #fdecea; color: var(--danger); }
+.badge-warn { background: #fff7ed; color: var(--warn); }
+.badge-blue { background: #e8f0fe; color: var(--info); }
+.badge-gray { background: var(--g50); color: var(--g400); }
+.tag { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: var(--r-sm); font-size: 11px; font-weight: 600; }
+
+/* ─── DASHBOARD ──────────────────────────────────────── */
+.dash-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 22px; }
+.dash-greeting { font-family: var(--serif); font-size: 28px; color: var(--ink); font-weight: 600; }
+.dash-date { font-size: 12px; color: var(--g400); margin-top: 4px; }
+.dash-actions { display: flex; gap: 8px; }
+.kpi-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; margin-bottom: 20px; }
+.kpi {
+  background: white; border-radius: var(--r-lg); padding: 18px;
+  border: 1px solid var(--g100); box-shadow: var(--sh-sm);
+  position: relative; overflow: hidden; transition: var(--trans);
+}
+.kpi:hover { transform: translateY(-2px); box-shadow: var(--sh-md); }
+.kpi-accent { position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+.kpi-icon { width: 38px; height: 38px; border-radius: var(--r-sm); display: flex; align-items: center; justify-content: center; margin-bottom: 12px; }
+.kpi-icon svg { width: 20px; height: 20px; }
+.kpi-val { font-family: var(--serif); font-size: 28px; font-weight: 600; color: var(--ink); line-height: 1; }
+.kpi-label { font-size: 11px; color: var(--g400); text-transform: uppercase; letter-spacing: .8px; font-weight: 700; margin-top: 6px; }
+.kpi-delta { font-size: 11px; margin-top: 6px; display: flex; align-items: center; gap: 3px; font-weight: 600; }
+.kpi-delta.up { color: var(--leaf); }
+.kpi-delta.dn { color: var(--danger); }
+
+.dash-grid { display: grid; grid-template-columns: 1fr 320px; gap: 16px; }
+.dash-right { display: flex; flex-direction: column; gap: 16px; }
+.chart-area { height: 190px; }
+
+.top-prod-list { display: flex; flex-direction: column; gap: 11px; padding-top: 2px; }
+.top-prod-item { display: flex; align-items: center; gap: 10px; }
+.tp-rank {
+  width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0; display: flex;
+  align-items: center; justify-content: center; font-size: 10px; font-weight: 800;
+}
+.tp-name { flex: 1; min-width: 0; }
+.tp-name-main { font-size: 12px; font-weight: 600; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tp-name-cat { font-size: 10px; color: var(--g400); }
+.tp-bar-wrap { width: 60px; height: 5px; background: var(--g100); border-radius: 3px; }
+.tp-bar { height: 100%; background: var(--leaf); border-radius: 3px; transition: width .6s ease; }
+.tp-amt { font-size: 11px; font-weight: 700; color: var(--g600); min-width: 52px; text-align: right; }
+
+.alert-list { display: flex; flex-direction: column; gap: 8px; padding-top: 2px; }
+.alert-row {
+  display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+  border-radius: var(--r-sm); background: var(--g50); border: 1px solid var(--g100);
+}
+.a-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.a-text { font-size: 12px; font-weight: 500; color: var(--ink); }
+.a-sub { font-size: 10px; color: var(--g400); margin-top: 1px; }
+
+.cashier-list { display: flex; flex-direction: column; gap: 10px; }
+.cashier-row { display: flex; align-items: center; gap: 10px; }
+.cash-av { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; flex-shrink: 0; }
+.cash-name { flex: 1; font-size: 12px; font-weight: 600; color: var(--ink); }
+.cash-bar-wrap { width: 70px; height: 5px; background: var(--g100); border-radius: 3px; }
+.cash-bar { height: 100%; background: var(--mid); border-radius: 3px; }
+.cash-amt { font-size: 11px; font-weight: 700; color: var(--green); min-width: 65px; text-align: right; }
+
+/* ─── POS ────────────────────────────────────────────── */
+#pos-page { padding: 0 !important; display: none; }
+#pos-page.show { display: flex !important; height: calc(100vh - var(--topbar)); }
+.pos-products { flex: 1; display: flex; flex-direction: column; padding: 16px; overflow: hidden; }
+.pos-search-bar {
+  display: flex; align-items: center; gap: 10px;
+  background: white; border: 2px solid var(--g100); border-radius: var(--r-md);
+  padding: 11px 16px; margin-bottom: 12px; transition: var(--trans);
+}
+.pos-search-bar:focus-within { border-color: var(--leaf); }
+.pos-search-bar input { flex: 1; font-size: 14px; color: var(--ink); }
+.pos-search-bar input::placeholder { color: var(--g200); }
+.pos-search-bar svg { width: 18px; height: 18px; color: var(--g200); flex-shrink: 0; }
+.pos-cats { display: flex; gap: 6px; margin-bottom: 14px; overflow-x: auto; padding-bottom: 2px; flex-shrink: 0; }
+.pos-cats::-webkit-scrollbar { height: 2px; }
+.cat-pill {
+  padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 600;
+  border: 1.5px solid var(--g100); background: white; color: var(--g400);
+  cursor: pointer; transition: var(--trans); white-space: nowrap; flex-shrink: 0;
+}
+.cat-pill:hover { border-color: var(--leaf); color: var(--green); }
+.cat-pill.on { background: var(--green); color: white; border-color: var(--green); }
+
+.prod-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(148px, 1fr)); gap: 10px; overflow-y: auto; flex: 1; align-content: start; }
+.prod-card {
+  background: white; border-radius: var(--r-md); padding: 14px;
+  border: 1.5px solid var(--g100); cursor: pointer; transition: var(--trans);
+  position: relative; user-select: none;
+}
+.prod-card:hover { border-color: var(--leaf); transform: translateY(-2px); box-shadow: var(--sh-md); }
+.prod-card:active { transform: translateY(0) scale(.98); }
+.prod-card.oos { opacity: .5; cursor: not-allowed; pointer-events: none; }
+.pc-emoji { font-size: 26px; margin-bottom: 8px; line-height: 1; }
+.pc-name { font-size: 12px; font-weight: 600; color: var(--ink); line-height: 1.3; margin-bottom: 3px; }
+.pc-sku { font-size: 9px; color: var(--g200); font-family: monospace; letter-spacing: .5px; margin-bottom: 8px; }
+.pc-bottom { display: flex; align-items: center; justify-content: space-between; }
+.pc-price { font-size: 14px; font-weight: 800; color: var(--green); }
+.pc-stock { font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 8px; }
+.pc-stock.ok { background: var(--pale); color: var(--green); }
+.pc-stock.low { background: #fff7ed; color: var(--warn); }
+.pc-stock.oos { background: #fdecea; color: var(--danger); }
+.added-flash { position: absolute; inset: 0; background: rgba(56,149,93,.12); border-radius: var(--r-md); opacity: 0; pointer-events: none; transition: opacity .2s; }
+
+/* CART */
+.pos-cart {
+  width: 340px; flex-shrink: 0; background: white; border-left: 1px solid var(--g100);
+  display: flex; flex-direction: column; overflow: hidden;
+}
+.cart-head {
+  padding: 14px 16px; border-bottom: 1px solid var(--g100);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.cart-head-left h3 { font-size: 14px; font-weight: 700; color: var(--ink); }
+.cart-head-left p { font-size: 11px; color: var(--g400); margin-top: 1px; }
+.cart-clear { font-size: 11px; font-weight: 700; color: var(--g200); padding: 4px 10px; border-radius: 6px; border: 1px solid var(--g100); transition: var(--trans); }
+.cart-clear:hover { color: var(--danger); border-color: var(--danger); }
+.cart-body { flex: 1; overflow-y: auto; padding: 10px 14px; }
+.cart-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--g200); text-align: center; }
+.cart-empty svg { width: 42px; height: 42px; margin-bottom: 10px; opacity: .4; }
+.cart-empty p { font-size: 13px; }
+.cart-empty small { font-size: 11px; margin-top: 4px; display: block; }
+.cart-item { display: flex; align-items: center; gap: 9px; padding: 9px 0; border-bottom: 1px solid var(--g50); }
+.ci-emoji { font-size: 20px; flex-shrink: 0; }
+.ci-info { flex: 1; min-width: 0; }
+.ci-name { font-size: 12px; font-weight: 600; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ci-price { font-size: 10px; color: var(--g400); }
+.ci-qty { display: flex; align-items: center; gap: 5px; }
+.qty-b { width: 22px; height: 22px; border-radius: 6px; background: var(--g50); color: var(--g600); font-size: 15px; font-weight: 700; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: var(--trans); line-height: 1; border: 1px solid var(--g100); }
+.qty-b:hover { background: var(--green); color: white; border-color: var(--green); }
+.qty-n { font-size: 13px; font-weight: 700; min-width: 18px; text-align: center; color: var(--ink); }
+.ci-total { font-size: 12px; font-weight: 800; color: var(--green); min-width: 58px; text-align: right; }
+.ci-rm { color: var(--g200); font-size: 17px; line-height: 1; cursor: pointer; padding: 3px; transition: var(--trans); }
+.ci-rm:hover { color: var(--danger); }
+
+.cart-foot { padding: 14px 16px; border-top: 1px solid var(--g100); }
+.cart-totals { margin-bottom: 12px; }
+.tot-row { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 5px; }
+.tot-label { color: var(--g400); }
+.tot-val { font-weight: 600; color: var(--ink); }
+.tot-grand { border-top: 1.5px solid var(--g100); padding-top: 8px; margin-top: 8px; }
+.tot-grand .tot-label { font-size: 14px; font-weight: 700; color: var(--ink); }
+.tot-grand .tot-val { font-size: 22px; font-family: var(--serif); color: var(--green); font-weight: 600; }
+.pay-chips { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-bottom: 10px; }
+.pay-chip {
+  padding: 7px 4px; text-align: center; border-radius: var(--r-sm); font-size: 11px; font-weight: 700;
+  border: 1.5px solid var(--g100); background: var(--g50); color: var(--g400);
+  cursor: pointer; transition: var(--trans);
+}
+.pay-chip:hover { border-color: var(--leaf); color: var(--green); }
+.pay-chip.on { background: var(--pale); border-color: var(--green); color: var(--green); }
+.pay-chip-icon { font-size: 16px; display: block; margin-bottom: 2px; }
+.checkout-btn {
+  width: 100%; padding: 13px; background: var(--green); color: white;
+  border-radius: var(--r-md); font-size: 14px; font-weight: 800; letter-spacing: .3px;
+  transition: var(--trans); display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.checkout-btn:hover:not(:disabled) { background: var(--mid); box-shadow: var(--sh-md); }
+.checkout-btn:disabled { opacity: .4; cursor: not-allowed; }
+.checkout-btn svg { width: 16px; height: 16px; }
+
+/* ─── INVENTORY ──────────────────────────────────────── */
+.inv-toolbar { display: flex; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; align-items: center; }
+.inv-search {
+  display: flex; align-items: center; gap: 8px;
+  background: white; border: 1.5px solid var(--g100); border-radius: var(--r-sm);
+  padding: 8px 12px; flex: 1; min-width: 180px; transition: var(--trans);
+}
+.inv-search:focus-within { border-color: var(--leaf); }
+.inv-search input { font-size: 13px; flex: 1; }
+.inv-search svg { width: 14px; height: 14px; color: var(--g200); flex-shrink: 0; }
+.inv-filter {
+  padding: 8px 14px; border-radius: var(--r-sm); border: 1.5px solid var(--g100);
+  font-size: 12px; background: white; color: var(--g400); cursor: pointer;
+}
+.inv-kpis { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 18px; }
+.inv-kpi {
+  background: white; border-radius: var(--r-md); padding: 14px 16px;
+  border: 1px solid var(--g100); display: flex; align-items: center; gap: 12px;
+}
+.inv-kpi-icon { width: 38px; height: 38px; border-radius: var(--r-sm); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+.inv-kpi-val { font-family: var(--serif); font-size: 24px; font-weight: 600; line-height: 1; }
+.inv-kpi-lbl { font-size: 10px; color: var(--g400); text-transform: uppercase; letter-spacing: .8px; margin-top: 3px; font-weight: 700; }
+.table-wrap { background: white; border-radius: var(--r-lg); border: 1px solid var(--g100); overflow: hidden; box-shadow: var(--sh-sm); }
+table { width: 100%; border-collapse: collapse; }
+thead th {
+  padding: 11px 14px; text-align: left; font-size: 10px; font-weight: 800;
+  color: var(--g400); text-transform: uppercase; letter-spacing: 1px;
+  background: var(--g50); border-bottom: 1px solid var(--g100);
+}
+tbody td { padding: 11px 14px; border-bottom: 1px solid var(--g50); font-size: 12px; vertical-align: middle; }
+tbody tr:last-child td { border-bottom: none; }
+tbody tr { transition: background var(--trans); }
+tbody tr:hover td { background: var(--g50); }
+.prod-thumb { width: 32px; height: 32px; background: var(--pale); border-radius: var(--r-sm); display: flex; align-items: center; justify-content: center; font-size: 16px; }
+.tbl-name { font-weight: 600; color: var(--ink); }
+.tbl-sku { font-size: 10px; color: var(--g200); font-family: monospace; }
+.act-btn { width: 26px; height: 26px; border-radius: 6px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--g100); background: white; cursor: pointer; transition: var(--trans); }
+.act-btn svg { width: 12px; height: 12px; }
+.act-btn:hover.edit { border-color: var(--leaf); color: var(--green); }
+.act-btn:hover.del { border-color: var(--danger); color: var(--danger); }
+.stk-num { font-weight: 700; }
+
+/* ─── REPORTS ────────────────────────────────────────── */
+.rep-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+.rep-chart-h { height: 170px; }
+.pm-bars { margin-top: 14px; display: flex; flex-direction: column; gap: 9px; }
+.pm-bar-row { display: flex; align-items: center; gap: 10px; }
+.pm-label { font-size: 11px; color: var(--g600); width: 55px; font-weight: 600; }
+.pm-track { flex: 1; height: 7px; background: var(--g100); border-radius: 4px; overflow: hidden; }
+.pm-fill { height: 100%; border-radius: 4px; transition: width .6s ease; }
+.pm-pct { font-size: 11px; font-weight: 700; color: var(--g600); min-width: 30px; text-align: right; }
+.txn-amount { font-weight: 800; color: var(--ink); }
+
+/* ─── RECEIPT MODAL ─────────────────────────────────── */
+.overlay {
+  position: fixed; inset: 0; background: rgba(10,25,15,.55);
+  z-index: 200; display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity .22s;
+  backdrop-filter: blur(4px);
+}
+.overlay.show { opacity: 1; pointer-events: all; }
+.receipt-paper {
+  background: white; border-radius: var(--r-xl); width: 340px;
+  max-height: 90vh; overflow-y: auto; box-shadow: var(--sh-lg);
+  transform: scale(.94) translateY(12px); transition: transform .22s ease;
+}
+.overlay.show .receipt-paper { transform: scale(1) translateY(0); }
+.rct-top {
+  background: var(--forest); padding: 24px 20px; text-align: center;
+  border-radius: var(--r-xl) var(--r-xl) 0 0; position: relative; overflow: hidden;
+}
+.rct-top::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse 60% 60% at 50% 120%, rgba(200,153,31,.2) 0%, transparent 70%);
+}
+.rct-logo { font-family: var(--serif); font-size: 22px; color: white; font-weight: 700; position: relative; z-index: 1; }
+.rct-addr { font-size: 10px; color: rgba(255,255,255,.55); margin-top: 4px; line-height: 1.7; position: relative; z-index: 1; }
+.rct-body { padding: 18px 20px; }
+.rct-meta { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 8px; margin-bottom: 16px; padding-bottom: 14px; border-bottom: 1.5px dashed var(--g100); }
+.rct-meta-item { text-align: center; }
+.rct-meta-lbl { font-size: 9px; color: var(--g200); text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
+.rct-meta-val { font-size: 12px; font-weight: 700; color: var(--ink); margin-top: 3px; }
+.rct-items { margin-bottom: 14px; }
+.rct-item { display: flex; justify-content: space-between; align-items: flex-start; padding: 6px 0; border-bottom: 1px solid var(--g50); }
+.rct-item-name { font-size: 12px; font-weight: 600; color: var(--ink); }
+.rct-item-qty { font-size: 10px; color: var(--g400); }
+.rct-item-tot { font-size: 12px; font-weight: 700; color: var(--ink); }
+.rct-tots { border-top: 1.5px solid var(--g100); padding-top: 10px; margin-bottom: 14px; }
+.rct-tot-row { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 5px; color: var(--g400); }
+.rct-tot-row span:last-child { font-weight: 600; color: var(--ink); }
+.rct-grand { display: flex; justify-content: space-between; align-items: center; background: var(--pale); padding: 10px 12px; border-radius: var(--r-sm); margin-top: 8px; }
+.rct-grand-lbl { font-size: 12px; font-weight: 800; color: var(--green); }
+.rct-grand-val { font-family: var(--serif); font-size: 24px; font-weight: 600; color: var(--green); }
+.rct-footer { text-align: center; padding: 0 0 6px; }
+.rct-footer p { font-size: 11px; color: var(--g400); margin-bottom: 3px; }
+.rct-barcode { display: flex; justify-content: center; gap: 1.5px; margin: 12px auto; width: fit-content; }
+.bc-bar { height: 34px; background: var(--ink); opacity: .8; }
+.rct-code { font-size: 9px; letter-spacing: 2px; color: var(--g200); text-align: center; margin-top: 4px; }
+.rct-actions { display: flex; gap: 8px; padding: 14px 20px; border-top: 1px solid var(--g100); }
+.rct-btn { flex: 1; padding: 10px; border-radius: var(--r-sm); font-size: 12px; font-weight: 700; cursor: pointer; transition: var(--trans); border: none; }
+.rct-print { background: var(--green); color: white; }
+.rct-print:hover { background: var(--mid); }
+.rct-new { background: var(--g50); color: var(--g600); border: 1.5px solid var(--g100); }
+.rct-new:hover { border-color: var(--g200); background: var(--g100); }
+
+/* ─── SIMPLE PAGES ───────────────────────────────────── */
+.simple-page { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 320px; text-align: center; gap: 16px; }
+.simple-page .sp-icon { font-size: 52px; }
+.simple-page h2 { font-family: var(--serif); font-size: 26px; color: var(--green); font-weight: 600; }
+.simple-page p { font-size: 13px; color: var(--g400); max-width: 360px; line-height: 1.7; }
+.sp-stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-top: 8px; max-width: 420px; width: 100%; }
+.sp-stat { background: white; border: 1px solid var(--g100); border-radius: var(--r-md); padding: 14px 12px; }
+.sp-stat-val { font-family: var(--serif); font-size: 22px; font-weight: 600; }
+.sp-stat-lbl { font-size: 10px; color: var(--g400); text-transform: uppercase; letter-spacing: .8px; font-weight: 700; margin-top: 4px; }
+
+/* ─── RESPONSIVE ─────────────────────────────────────── */
+@media (max-width: 1100px) {
+  .kpi-grid { grid-template-columns: repeat(2,1fr); }
+  .dash-grid { grid-template-columns: 1fr; }
+  .rep-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 800px) {
+  .sidebar { width: 60px; }
+  .sb-logo-text, .sb-logo-sub, .nav-item span, .sb-section, .nb, .sb-uname, .sb-urole { display: none; }
+  .nav-item { justify-content: center; padding: 10px; }
+  .nav-item::before { display: none; }
+  .sb-logo { justify-content: center; }
+  .sb-user { justify-content: center; }
+  .main { overflow-x: hidden; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════ LOGIN -->
+<div id="login">
+  <div class="login-art">
+    <div class="art-pattern"></div>
+    <div class="login-brand">
+      <div class="brand-icon">
+        <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-5 14H7v-2h8v2zm3-4H7v-2h11v2zm0-4H7V8h11v2z"/></svg>
+      </div>
+      <div>
+        <div class="brand-name">Pendo Packaging</div>
+        <div class="brand-tagline">Business Suite · Chuka, Kenya</div>
+      </div>
+    </div>
+    <div class="login-headline">Smart POS for a <em>growing</em> Kenya.</div>
+    <div class="login-sub">Manage inventory, process sales, track staff performance and grow your packaging business — all in one modern platform.</div>
+    <div class="login-stats">
+      <div class="login-stat"><div class="login-stat-val">500+</div><div class="login-stat-label">Products</div></div>
+      <div class="login-stat"><div class="login-stat-val">M-Pesa</div><div class="login-stat-label">Integrated</div></div>
+      <div class="login-stat"><div class="login-stat-val">Real-time</div><div class="login-stat-label">Alerts</div></div>
+    </div>
+  </div>
+  <div class="login-form-wrap">
+    <h2>Welcome back</h2>
+    <p>Sign in to your business dashboard</p>
+    <div class="form-field">
+      <label>Username</label>
+      <input type="text" id="lu" value="admin" placeholder="Enter username">
+    </div>
+    <div class="form-field">
+      <label>Password</label>
+      <input type="password" id="lp" value="••••••••" placeholder="Password">
+    </div>
+    <div class="form-field">
+      <label>Role</label>
+      <select id="lr">
+        <option value="admin">Admin / Manager</option>
+        <option value="cashier">Cashier</option>
+        <option value="super">Super Admin</option>
+      </select>
+    </div>
+    <button class="login-btn" onclick="login()">
+      <svg viewBox="0 0 24 24" fill="currentColor" style="width:16px;height:16px"><path d="M11 7L9.6 8.4l2.6 2.6H2v2h10.2l-2.6 2.6L11 17l5-5-5-5zm9 12h-8v2h8c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-8v2h8v14z"/></svg>
+      Sign In to Dashboard
+    </button>
+    <div class="quick-roles">
+      <p>— Quick demo login as —</p>
+      <div class="role-chips">
+        <div class="role-chip on" onclick="setRole('admin',this)">Admin</div>
+        <div class="role-chip" onclick="setRole('cashier',this)">Cashier</div>
+        <div class="role-chip" onclick="setRole('super',this)">Super Admin</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ APP -->
+<div id="app">
+  <div class="shell">
+
+    <!-- SIDEBAR -->
+    <nav class="sidebar">
+      <div class="sb-logo">
+        <div class="sb-logo-icon"><svg viewBox="0 0 24 24" fill="white"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-5 14H7v-2h8v2zm3-4H7v-2h11v2zm0-4H7V8h11v2z"/></svg></div>
+        <div><div class="sb-logo-text">Pendo</div><div class="sb-logo-sub">Packaging</div></div>
+      </div>
+      <div class="sb-nav">
+        <div class="sb-section">Main</div>
+        <div class="nav-item active" data-page="dashboard" onclick="go('dashboard',this)">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+          <span>Dashboard</span>
+        </div>
+        <div class="nav-item" data-page="pos" onclick="go('pos',this)">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg>
+          <span>Point of Sale</span>
+          <span class="nb">3</span>
+        </div>
+        <div class="sb-section">Management</div>
+        <div class="nav-item" data-page="inventory" onclick="go('inventory',this)">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+          <span>Inventory</span>
+          <span class="nb warn">7</span>
+        </div>
+        <div class="nav-item" data-page="reports" onclick="go('reports',this)">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6h-6z"/></svg>
+          <span>Reports</span>
+        </div>
+        <div class="nav-item" data-page="customers" onclick="go('customers',this)">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+          <span>Customers</span>
+        </div>
+        <div class="nav-item" data-page="suppliers" onclick="go('suppliers',this)">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4z"/></svg>
+          <span>Suppliers</span>
+        </div>
+        <div class="nav-item" data-page="expenses" onclick="go('expenses',this)">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
+          <span>Expenses</span>
+        </div>
+        <div class="sb-section">System</div>
+        <div class="nav-item" data-page="settings" onclick="go('settings',this)">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+          <span>Settings</span>
+        </div>
+      </div>
+      <div class="sb-footer">
+        <div class="sb-user">
+          <div class="sb-av" id="av">AM</div>
+          <div><div class="sb-uname" id="uname">Admin Manager</div><div class="sb-urole" id="urole">Administrator</div></div>
+          <button class="logout-btn" onclick="logout()">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5-5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg>
+          </button>
+        </div>
+      </div>
+    </nav>
+
+    <!-- MAIN -->
+    <div class="main">
+      <header class="topbar">
+        <div class="topbar-title" id="page-title">Dashboard</div>
+        <div class="topbar-search">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+          <input placeholder="Search products, customers…">
+        </div>
+        <div class="topbar-right">
+          <div class="topbar-btn" title="Notifications">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
+            <div class="notif-pip"></div>
+          </div>
+          <div class="live-badge"><div class="live-dot"></div>Live</div>
+        </div>
+      </header>
+
+      <!-- ── DASHBOARD ──────────────────────────────────── -->
+      <div id="dashboard" class="page-content page show">
+        <div class="dash-header">
+          <div>
+            <div class="dash-greeting" id="greeting">Good morning, Manager 👋</div>
+            <div class="dash-date" id="dash-date"></div>
+          </div>
+          <div class="dash-actions">
+            <button class="btn btn-secondary">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+              Export Report
+            </button>
+            <button class="btn btn-primary" onclick="go('pos',document.querySelector('[data-page=pos]'))">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg>
+              New Sale
+            </button>
+          </div>
+        </div>
+
+        <div class="kpi-grid">
+          <div class="kpi"><div class="kpi-accent" style="background:var(--green)"></div><div class="kpi-icon" style="background:var(--pale)"><svg viewBox="0 0 24 24" fill="var(--green)"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg></div><div class="kpi-val">KES 47,280</div><div class="kpi-label">Today's Sales</div><div class="kpi-delta up">↑ 12.4% vs yesterday</div></div>
+          <div class="kpi"><div class="kpi-accent" style="background:var(--gold)"></div><div class="kpi-icon" style="background:var(--gold-p)"><svg viewBox="0 0 24 24" fill="var(--gold)"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6h-6z"/></svg></div><div class="kpi-val">KES 1.24M</div><div class="kpi-label">Monthly Revenue</div><div class="kpi-delta up">↑ 8.7% vs last month</div></div>
+          <div class="kpi"><div class="kpi-accent" style="background:var(--info)"></div><div class="kpi-icon" style="background:#e8f0fe"><svg viewBox="0 0 24 24" fill="var(--info)"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg></div><div class="kpi-val">2,847</div><div class="kpi-label">Customers</div><div class="kpi-delta up">↑ 34 new this week</div></div>
+          <div class="kpi"><div class="kpi-accent" style="background:var(--danger)"></div><div class="kpi-icon" style="background:#fdecea"><svg viewBox="0 0 24 24" fill="var(--danger)"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg></div><div class="kpi-val" style="color:var(--danger)">7</div><div class="kpi-label">Low Stock Items</div><div class="kpi-delta dn">↓ Reorder needed</div></div>
+        </div>
+
+        <div class="dash-grid">
+          <div style="display:flex;flex-direction:column;gap:16px">
+            <div class="card">
+              <div class="card-head" style="padding-bottom:16px">
+                <div style="display:flex;align-items:center;justify-content:space-between">
+                  <div><div class="card-title">Sales Overview</div><div class="card-sub">Revenue this week vs last week</div></div>
+                  <div style="display:flex;gap:6px" id="chart-filters">
+                    <button class="cat-pill on" style="font-size:11px;padding:4px 11px" onclick="switchFilter('7D',this)">7D</button>
+                    <button class="cat-pill" style="font-size:11px;padding:4px 11px" onclick="switchFilter('30D',this)">30D</button>
+                    <button class="cat-pill" style="font-size:11px;padding:4px 11px" onclick="switchFilter('90D',this)">90D</button>
+                  </div>
+                </div>
+              </div>
+              <div class="card-body" style="padding-top:0"><div class="chart-area"><canvas id="salesChart"></canvas></div></div>
+            </div>
+            <div class="card card-body">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+                <div><div class="card-title">Top Selling Products</div><div class="card-sub">By revenue this month</div></div>
+              </div>
+              <div class="top-prod-list">
+                <div class="top-prod-item"><div class="tp-rank" style="background:var(--gold-p);color:var(--gold)">1</div><div class="tp-name"><div class="tp-name-main">Non-Woven Bags 50pcs</div><div class="tp-name-cat">Non-Woven Bags</div></div><div class="tp-bar-wrap"><div class="tp-bar" style="width:100%"></div></div><div class="tp-amt">KES 87.4K</div></div>
+                <div class="top-prod-item"><div class="tp-rank" style="background:var(--pale);color:var(--green)">2</div><div class="tp-name"><div class="tp-name-main">Paper Pouches Medium</div><div class="tp-name-cat">Paper Pouches</div></div><div class="tp-bar-wrap"><div class="tp-bar" style="width:78%"></div></div><div class="tp-amt">KES 68.2K</div></div>
+                <div class="top-prod-item"><div class="tp-rank" style="background:var(--pale);color:var(--green)">3</div><div class="tp-name"><div class="tp-name-main">Disposable Cups 8oz</div><div class="tp-name-cat">Disposable Cups</div></div><div class="tp-bar-wrap"><div class="tp-bar" style="width:65%"></div></div><div class="tp-amt">KES 56.9K</div></div>
+                <div class="top-prod-item"><div class="tp-rank" style="background:var(--pale);color:var(--green)">4</div><div class="tp-name"><div class="tp-name-main">Masking Tape 24mm</div><div class="tp-name-cat">Tape</div></div><div class="tp-bar-wrap"><div class="tp-bar" style="width:52%"></div></div><div class="tp-amt">KES 45.5K</div></div>
+                <div class="top-prod-item"><div class="tp-rank" style="background:var(--pale);color:var(--green)">5</div><div class="tp-name"><div class="tp-name-main">Tissue Paper 12 rolls</div><div class="tp-name-cat">Tissue Papers</div></div><div class="tp-bar-wrap"><div class="tp-bar" style="width:44%"></div></div><div class="tp-amt">KES 38.7K</div></div>
+              </div>
+            </div>
+          </div>
+          <div class="dash-right">
+            <div class="card card-body">
+              <div class="card-title" style="margin-bottom:12px">⚠️ Stock Alerts</div>
+              <div class="alert-list">
+                <div class="alert-row"><div class="a-dot" style="background:var(--danger)"></div><div><div class="a-text">Khaki Bags Large — Out of stock</div><div class="a-sub">Reorder immediately</div></div></div>
+                <div class="alert-row"><div class="a-dot" style="background:var(--warn)"></div><div><div class="a-text">Grocery Nets 50pcs — 8 units</div><div class="a-sub">Below minimum threshold</div></div></div>
+                <div class="alert-row"><div class="a-dot" style="background:var(--warn)"></div><div><div class="a-text">Diapers Newborn — 12 units</div><div class="a-sub">Low stock warning</div></div></div>
+                <div class="alert-row"><div class="a-dot" style="background:var(--warn)"></div><div><div class="a-text">Masking Tape 48mm — 8 units</div><div class="a-sub">Low stock warning</div></div></div>
+                <div class="alert-row"><div class="a-dot" style="background:var(--leaf)"></div><div><div class="a-text">PO-0082 received</div><div class="a-sub">120 units restocked</div></div></div>
+              </div>
+            </div>
+            <div class="card card-body">
+              <div class="card-title" style="margin-bottom:12px">👩‍💼 Cashier Performance Today</div>
+              <div class="cashier-list">
+                <div class="cashier-row"><div class="cash-av" style="background:#d4edda;color:#155724">WN</div><div class="cash-name">Wanjiku Njoroge</div><div class="cash-bar-wrap"><div class="cash-bar" style="width:100%"></div></div><div class="cash-amt">KES 18,400</div></div>
+                <div class="cashier-row"><div class="cash-av" style="background:#d1ecf1;color:#0c5460">KM</div><div class="cash-name">Kipchoge Mutai</div><div class="cash-bar-wrap"><div class="cash-bar" style="width:75%"></div></div><div class="cash-amt">KES 13,820</div></div>
+                <div class="cashier-row"><div class="cash-av" style="background:#fff3cd;color:#856404">AN</div><div class="cash-name">Amina Njoki</div><div class="cash-bar-wrap"><div class="cash-bar" style="width:60%"></div></div><div class="cash-amt">KES 11,060</div></div>
+                <div class="cashier-row"><div class="cash-av" style="background:#f8d7da;color:#721c24">OM</div><div class="cash-name">Otieno Mwangi</div><div class="cash-bar-wrap"><div class="cash-bar" style="width:22%"></div></div><div class="cash-amt">KES 4,000</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── POS ────────────────────────────────────────── -->
+      <div id="pos" class="page" style="padding:0; height:calc(100vh - var(--topbar)); overflow:hidden; display:none; flex-direction:row;">
+        <div class="pos-products">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-shrink:0">
+            <div style="font-family:var(--serif);font-size:18px;color:var(--ink);font-weight:600">Select Products</div>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-secondary" style="font-size:11px;padding:6px 12px">📟 Scan Barcode</button>
+              <button class="btn btn-secondary" style="font-size:11px;padding:6px 12px">⏸ Suspend Sale</button>
+            </div>
+          </div>
+          <div class="pos-search-bar">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+            <input id="pos-q" placeholder="Search by name, SKU or barcode…" oninput="filterProds()">
+          </div>
+          <div class="pos-cats" id="pos-cats">
+            <div class="cat-pill on" onclick="setCat('All',this)">All Products</div>
+            <div class="cat-pill" onclick="setCat('Non-Woven Bags',this)">Non-Woven Bags</div>
+            <div class="cat-pill" onclick="setCat('Paper Bags',this)">Paper Bags</div>
+            <div class="cat-pill" onclick="setCat('Paper Pouches',this)">Paper Pouches</div>
+            <div class="cat-pill" onclick="setCat('Disposable Cups',this)">Disposable Cups</div>
+            <div class="cat-pill" onclick="setCat('Disposable Plates',this)">Disposable Plates</div>
+            <div class="cat-pill" onclick="setCat('Tissue Papers',this)">Tissue Papers</div>
+            <div class="cat-pill" onclick="setCat('Diapers',this)">Diapers</div>
+            <div class="cat-pill" onclick="setCat('Sanitary',this)">Sanitary</div>
+            <div class="cat-pill" onclick="setCat('Tape',this)">Tape</div>
+            <div class="cat-pill" onclick="setCat('Khaki Bags',this)">Khaki Bags</div>
+          </div>
+          <div class="prod-grid" id="prod-grid"></div>
+        </div>
+        <div class="pos-cart">
+          <div class="cart-head">
+            <div class="cart-head-left">
+              <h3>Current Sale</h3>
+              <p>Cashier: Wanjiku N. · <span style="color:var(--green);font-weight:700">#RCP-0234</span></p>
+            </div>
+            <button class="cart-clear" onclick="clearCart()">Clear</button>
+          </div>
+          <div class="cart-body" id="cart-body">
+            <div class="cart-empty">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z"/></svg>
+              <p>Cart is empty</p><small>Tap a product to add it</small>
+            </div>
+          </div>
+          <div class="cart-foot">
+            <div class="cart-totals">
+              <div class="tot-row"><span class="tot-label">Subtotal</span><span class="tot-val" id="c-sub">KES 0</span></div>
+              <div class="tot-row"><span class="tot-label">Discount</span><span class="tot-val" style="color:var(--danger)" id="c-disc">— KES 0</span></div>
+              <div class="tot-row"><span class="tot-label">VAT (16%)</span><span class="tot-val" id="c-vat">KES 0</span></div>
+              <div class="tot-row tot-grand"><span class="tot-label">TOTAL</span><span class="tot-val" id="c-tot">KES 0</span></div>
+            </div>
+            <div class="pay-chips">
+              <div class="pay-chip on" id="pc-cash" onclick="selPay('cash')"><span class="pay-chip-icon">💵</span>Cash</div>
+              <div class="pay-chip" id="pc-mpesa" onclick="selPay('mpesa')"><span class="pay-chip-icon">📱</span>M-Pesa</div>
+              <div class="pay-chip" id="pc-card" onclick="selPay('card')"><span class="pay-chip-icon">💳</span>Card</div>
+            </div>
+            <button class="checkout-btn" id="chk-btn" onclick="checkout()" disabled>
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg>
+              Process Payment
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── INVENTORY ──────────────────────────────────── -->
+      <div id="inventory" class="page-content page" style="display:none">
+        <div class="inv-toolbar">
+          <div class="inv-search"><svg viewBox="0 0 24 24" fill="currentColor" style="width:14px;height:14px;color:var(--g200)"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg><input placeholder="Search products…"></div>
+          <select class="inv-filter"><option>All Categories</option><option>Non-Woven Bags</option><option>Paper Bags</option><option>Paper Pouches</option><option>Disposable Cups</option><option>Tissue Papers</option><option>Diapers</option></select>
+          <button class="btn btn-secondary">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>Export
+          </button>
+          <button class="btn btn-primary" onclick="alert('➕ Add Product form — modal would open here.')">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>Add Product
+          </button>
+        </div>
+        <div class="inv-kpis">
+          <div class="inv-kpi"><div class="inv-kpi-icon" style="background:var(--pale)">📦</div><div><div class="inv-kpi-val" style="color:var(--green)">248</div><div class="inv-kpi-lbl">Total Products</div></div></div>
+          <div class="inv-kpi"><div class="inv-kpi-icon" style="background:#fff7ed">⚠️</div><div><div class="inv-kpi-val" style="color:var(--warn)">7</div><div class="inv-kpi-lbl">Low Stock</div></div></div>
+          <div class="inv-kpi"><div class="inv-kpi-icon" style="background:#fdecea">🚫</div><div><div class="inv-kpi-val" style="color:var(--danger)">2</div><div class="inv-kpi-lbl">Out of Stock</div></div></div>
+          <div class="inv-kpi"><div class="inv-kpi-icon" style="background:var(--gold-p)">💰</div><div><div class="inv-kpi-val" style="color:var(--gold)">KES 2.8M</div><div class="inv-kpi-lbl">Stock Value</div></div></div>
+        </div>
+        <div class="table-wrap">
+          <table><thead><tr><th>Product</th><th>SKU</th><th>Category</th><th>Retail</th><th>Wholesale</th><th>Stock</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="inv-tbody"></tbody></table>
+        </div>
+      </div>
+
+      <!-- ── REPORTS ─────────────────────────────────────── -->
+      <div id="reports" class="page-content page" style="display:none">
+        <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;align-items:center">
+          <button class="btn btn-primary"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>Export PDF</button>
+          <button class="btn btn-secondary">📊 Excel</button>
+          <button class="btn btn-secondary">📋 CSV</button>
+          <div style="margin-left:auto;display:flex;gap:8px">
+            <input type="date" style="padding:7px 12px;border-radius:var(--r-sm);border:1.5px solid var(--g100);font-size:12px;color:var(--g600)">
+            <input type="date" style="padding:7px 12px;border-radius:var(--r-sm);border:1.5px solid var(--g100);font-size:12px;color:var(--g600)">
+          </div>
+        </div>
+        <div class="rep-grid">
+          <div class="card card-body">
+            <div class="card-title">Weekly Revenue</div><div class="card-sub" style="margin-bottom:14px">Last 8 weeks</div>
+            <div class="rep-chart-h"><canvas id="repBar"></canvas></div>
+          </div>
+          <div class="card card-body">
+            <div class="card-title">Payment Methods</div><div class="card-sub" style="margin-bottom:14px">This month</div>
+            <div style="height:140px;display:flex;justify-content:center"><canvas id="repDonut" style="max-width:140px"></canvas></div>
+            <div class="pm-bars" style="margin-top:16px">
+              <div class="pm-bar-row"><div class="pm-label">M-Pesa</div><div class="pm-track"><div class="pm-fill" style="width:62%;background:var(--green)"></div></div><div class="pm-pct">62%</div></div>
+              <div class="pm-bar-row"><div class="pm-label">Cash</div><div class="pm-track"><div class="pm-fill" style="width:28%;background:var(--gold)"></div></div><div class="pm-pct">28%</div></div>
+              <div class="pm-bar-row"><div class="pm-label">Card</div><div class="pm-track"><div class="pm-fill" style="width:10%;background:var(--info)"></div></div><div class="pm-pct">10%</div></div>
+            </div>
+          </div>
+          <div class="card card-body">
+            <div class="card-title">Wholesale vs Retail</div><div class="card-sub" style="margin-bottom:14px">Daily split this week</div>
+            <div class="rep-chart-h"><canvas id="repStack"></canvas></div>
+          </div>
+          <div class="card card-body">
+            <div class="card-title">Category Revenue</div><div class="card-sub" style="margin-bottom:14px">Top categories</div>
+            <div class="rep-chart-h"><canvas id="repCat"></canvas></div>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <div style="padding:16px 18px;border-bottom:1px solid var(--g100)"><span class="card-title">Recent Transactions</span></div>
+          <table><thead><tr><th>Receipt #</th><th>Date & Time</th><th>Cashier</th><th>Items</th><th>Payment</th><th>Amount</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td style="color:var(--green);font-weight:700">#RCP-0233</td><td>May 11, 2026 · 10:42</td><td>Wanjiku N.</td><td>5 items</td><td><span class="badge badge-blue">M-Pesa</span></td><td class="txn-amount">KES 4,280</td><td><span class="badge badge-green">Completed</span></td></tr>
+            <tr><td style="color:var(--green);font-weight:700">#RCP-0232</td><td>May 11, 2026 · 09:58</td><td>Kipchoge M.</td><td>3 items</td><td><span class="badge badge-gold">Cash</span></td><td class="txn-amount">KES 1,850</td><td><span class="badge badge-green">Completed</span></td></tr>
+            <tr><td style="color:var(--green);font-weight:700">#RCP-0231</td><td>May 11, 2026 · 09:15</td><td>Amina N.</td><td>12 items</td><td><span class="badge badge-blue">M-Pesa</span></td><td class="txn-amount">KES 18,400</td><td><span class="badge badge-green">Completed</span></td></tr>
+            <tr><td style="color:var(--green);font-weight:700">#RCP-0230</td><td>May 10, 2026 · 17:30</td><td>Wanjiku N.</td><td>2 items</td><td><span class="badge badge-gray">Card</span></td><td class="txn-amount">KES 960</td><td><span class="badge badge-green">Completed</span></td></tr>
+            <tr><td style="color:var(--green);font-weight:700">#RCP-0229</td><td>May 10, 2026 · 16:12</td><td>Otieno M.</td><td>8 items</td><td><span class="badge badge-blue">M-Pesa</span></td><td class="txn-amount">KES 7,200</td><td><span class="badge badge-red">Refunded</span></td></tr>
+          </tbody></table>
+        </div>
+      </div>
+
+      <!-- ── SIMPLE PAGES ───────────────────────────────── -->
+      <div id="customers" class="page-content page" style="display:none">
+        <div class="card card-body"><div class="simple-page"><div class="sp-icon">👥</div><h2>Customer Management</h2><p>Manage your customer database, loyalty points, purchase history, and wholesale accounts.</p><div class="sp-stats"><div class="sp-stat"><div class="sp-stat-val" style="color:var(--green)">2,847</div><div class="sp-stat-lbl">Customers</div></div><div class="sp-stat"><div class="sp-stat-val" style="color:var(--gold)">142</div><div class="sp-stat-lbl">Wholesale</div></div><div class="sp-stat"><div class="sp-stat-val" style="color:var(--info)">89K pts</div><div class="sp-stat-lbl">Loyalty</div></div></div></div></div>
+      </div>
+      <div id="suppliers" class="page-content page" style="display:none">
+        <div class="card card-body"><div class="simple-page"><div class="sp-icon">🚚</div><h2>Supplier Management</h2><p>Manage suppliers, purchase orders, delivery tracking, and outstanding balances.</p><div class="sp-stats"><div class="sp-stat"><div class="sp-stat-val" style="color:var(--green)">24</div><div class="sp-stat-lbl">Suppliers</div></div><div class="sp-stat"><div class="sp-stat-val" style="color:var(--warn)">KES 284K</div><div class="sp-stat-lbl">Outstanding</div></div><div class="sp-stat"><div class="sp-stat-val" style="color:var(--info)">7</div><div class="sp-stat-lbl">Pending POs</div></div></div></div></div>
+      </div>
+      <div id="expenses" class="page-content page" style="display:none">
+        <div class="card card-body"><div class="simple-page"><div class="sp-icon">📊</div><h2>Expenses Management</h2><p>Track all business expenses — rent, salaries, utilities, transport, and miscellaneous costs.</p><div class="sp-stats"><div class="sp-stat"><div class="sp-stat-val" style="color:var(--danger)">KES 186K</div><div class="sp-stat-lbl">This Month</div></div><div class="sp-stat"><div class="sp-stat-val" style="color:var(--green)">KES 1.06M</div><div class="sp-stat-lbl">Net Profit</div></div><div class="sp-stat"><div class="sp-stat-val" style="color:var(--gold)">14</div><div class="sp-stat-lbl">Categories</div></div></div></div></div>
+      </div>
+      <div id="settings" class="page-content page" style="display:none">
+        <div class="card card-body"><div class="simple-page"><div class="sp-icon">⚙️</div><h2>System Settings</h2><p>Configure users, roles, M-Pesa integration, thermal printer, backups, and business preferences.</p><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;max-width:380px;margin-top:4px">
+          <div style="padding:13px;background:var(--g50);border-radius:var(--r-md);border:1px solid var(--g100);cursor:pointer;text-align:left"><div style="font-weight:700;font-size:12px;margin-bottom:3px">👤 Users & Roles</div><div style="font-size:10px;color:var(--g400)">Manage access control</div></div>
+          <div style="padding:13px;background:var(--g50);border-radius:var(--r-md);border:1px solid var(--g100);cursor:pointer;text-align:left"><div style="font-weight:700;font-size:12px;margin-bottom:3px">🖨️ Thermal Printer</div><div style="font-size:10px;color:var(--g400)">Configure receipt printer</div></div>
+          <div style="padding:13px;background:var(--g50);border-radius:var(--r-md);border:1px solid var(--g100);cursor:pointer;text-align:left"><div style="font-weight:700;font-size:12px;margin-bottom:3px">📱 M-Pesa API</div><div style="font-size:10px;color:var(--g400)">Daraja API credentials</div></div>
+          <div style="padding:13px;background:var(--g50);border-radius:var(--r-md);border:1px solid var(--g100);cursor:pointer;text-align:left"><div style="font-weight:700;font-size:12px;margin-bottom:3px">☁️ Cloud Backup</div><div style="font-size:10px;color:var(--g400)">Automated daily backups</div></div>
+        </div></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- RECEIPT MODAL -->
+<div class="overlay" id="overlay" onclick="closeReceipt(event)">
+  <div class="receipt-paper">
+    <div class="rct-top">
+      <div class="rct-logo">Pendo Packaging</div>
+      <div class="rct-addr">Market Road, Chuka Town, Tharaka-Nithi County<br>Tel: +254 722 123 456 · info@pendopackaging.co.ke</div>
+    </div>
+    <div class="rct-body">
+      <div class="rct-meta">
+        <div class="rct-meta-item"><div class="rct-meta-lbl">Receipt</div><div class="rct-meta-val">#RCP-0234</div></div>
+        <div class="rct-meta-item"><div class="rct-meta-lbl">Date</div><div class="rct-meta-val" id="r-date">—</div></div>
+        <div class="rct-meta-item"><div class="rct-meta-lbl">Cashier</div><div class="rct-meta-val">Wanjiku</div></div>
+        <div class="rct-meta-item"><div class="rct-meta-lbl">Payment</div><div class="rct-meta-val" id="r-pay">Cash</div></div>
+      </div>
+      <div class="rct-items" id="r-items"></div>
+      <div class="rct-tots">
+        <div class="rct-tot-row"><span>Subtotal</span><span id="r-sub">KES 0</span></div>
+        <div class="rct-tot-row"><span>VAT (16%)</span><span id="r-vat">KES 0</span></div>
+      </div>
+      <div class="rct-grand"><div class="rct-grand-lbl">TOTAL PAID</div><div class="rct-grand-val" id="r-tot">KES 0</div></div>
+      <div class="rct-footer" style="margin-top:16px">
+        <p>Thank you for shopping at Pendo Packaging!</p>
+        <p>Quality packaging solutions for every need.</p>
+        <div class="rct-barcode" id="rct-bc"></div>
+        <div class="rct-code">2026051100234</div>
+      </div>
+    </div>
+    <div class="rct-actions">
+      <button class="rct-btn rct-print" onclick="alert('🖨️ Printing receipt…')">🖨️ Print Receipt</button>
+      <button class="rct-btn rct-new" onclick="newSale()">+ New Sale</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ SCRIPT -->
+<script>
+/* ── DATA ── */
+const PRODUCTS = [
+  {id:1,e:'🛍️',n:'Non-Woven Bag Small',   s:'NWB-S-001',c:'Non-Woven Bags',  r:35, w:22,  q:240},
+  {id:2,e:'🛍️',n:'Non-Woven Bag Medium',  s:'NWB-M-002',c:'Non-Woven Bags',  r:55, w:38,  q:180},
+  {id:3,e:'🛍️',n:'Non-Woven Bag Large',   s:'NWB-L-003',c:'Non-Woven Bags',  r:80, w:58,  q:95},
+  {id:4,e:'📦',n:'Paper Pouch Small',      s:'PPH-S-001', c:'Paper Pouches',   r:12, w:8,   q:520},
+  {id:5,e:'📦',n:'Paper Pouch Medium',     s:'PPH-M-002', c:'Paper Pouches',   r:18, w:12,  q:380},
+  {id:6,e:'📦',n:'Paper Pouch Large',      s:'PPH-L-003', c:'Paper Pouches',   r:28, w:19,  q:210},
+  {id:7,e:'🗂️',n:'Paper Bag Brown A4',    s:'PBG-A4-001',c:'Paper Bags',      r:25, w:17,  q:310},
+  {id:8,e:'🗂️',n:'Paper Bag White Medium',s:'PBG-W-002', c:'Paper Bags',      r:32, w:22,  q:185},
+  {id:9,e:'☕',n:'Disposable Cup 8oz (50)',s:'DC8-050-01', c:'Disposable Cups', r:280,w:220, q:45},
+  {id:10,e:'☕',n:'Disposable Cup 12oz (50)',s:'DC12-050-02',c:'Disposable Cups',r:340,w:270,q:38},
+  {id:11,e:'🍽️',n:'Disposable Plate 7" (50)',s:'DP7-050-01',c:'Disposable Plates',r:200,w:155,q:62},
+  {id:12,e:'🍽️',n:'Disposable Plate 9" (50)',s:'DP9-050-02',c:'Disposable Plates',r:280,w:215,q:28},
+  {id:13,e:'📏',n:'Masking Tape 24mm',     s:'MT-24-001',  c:'Tape',           r:120,w:90,  q:14},
+  {id:14,e:'📏',n:'Masking Tape 48mm',     s:'MT-48-002',  c:'Tape',           r:200,w:155, q:8},
+  {id:15,e:'👜',n:'Khaki Bag Small',       s:'KB-S-001',   c:'Khaki Bags',     r:45, w:30,  q:0},
+  {id:16,e:'👜',n:'Khaki Bag Large',       s:'KB-L-002',   c:'Khaki Bags',     r:75, w:55,  q:0},
+  {id:17,e:'🛒',n:'Grocery Net Large',     s:'GN-L-001',   c:'Grocery Nets',   r:85, w:60,  q:8},
+  {id:18,e:'🧻',n:'Tissue Paper 12 rolls', s:'TP-12-001',  c:'Tissue Papers',  r:450,w:380, q:55},
+  {id:19,e:'🧻',n:'Tissue Paper 4 rolls',  s:'TP-4-002',   c:'Tissue Papers',  r:160,w:130, q:90},
+  {id:20,e:'👶',n:'Diapers Newborn Pack',  s:'DN-NB-001',  c:'Diapers',        r:680,w:580, q:12},
+  {id:21,e:'👶',n:'Diapers Size 2 Pack',   s:'D2-PK-002',  c:'Diapers',        r:720,w:620, q:22},
+  {id:22,e:'🌸',n:'Sanitary Towels 24pk',  s:'ST-24-001',  c:'Sanitary',       r:180,w:145, q:15},
+  {id:23,e:'🌸',n:'Sanitary Towels 10pk',  s:'ST-10-002',  c:'Sanitary',       r:80, w:62,  q:40},
+];
+
+let cart = [], payM = 'cash', posCat = 'All', repChartsLoaded = false;
+
+/* ── AUTH ── */
+const ROLES = {
+  admin: { name:'Admin Manager', role:'Administrator', av:'AM' },
+  cashier: { name:'Wanjiku Njoroge', role:'Cashier', av:'WN' },
+  super: { name:'Super Admin', role:'Super Administrator', av:'SA' }
+};
+
+function setRole(r, el) {
+  document.querySelectorAll('.role-chip').forEach(c => c.classList.remove('on'));
+  el.classList.add('on');
+  document.getElementById('lr').value = r;
+}
+function login() {
+  const r = document.getElementById('lr').value;
+  const u = ROLES[r];
+  document.getElementById('av').textContent = u.av;
+  document.getElementById('uname').textContent = u.name;
+  document.getElementById('urole').textContent = u.role;
+  document.getElementById('login').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  setGreeting(); renderProds(); renderInv();
+  setTimeout(initDashCharts, 120);
+}
+function logout() {
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('login').style.display = 'flex';
+}
+
+/* ── NAVIGATION ── */
+const PAGE_TITLES = { dashboard:'Dashboard', pos:'Point of Sale', inventory:'Inventory Management', reports:'Reports & Analytics', customers:'Customer Management', suppliers:'Supplier Management', expenses:'Expenses', settings:'Settings' };
+
+function go(p, el) {
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  if (el) el.classList.add('active');
+  document.querySelectorAll('.page').forEach(x => {
+    x.classList.remove('show');
+    x.style.display = 'none';
+  });
+  const pg = document.getElementById(p);
+  if (p === 'pos') {
+    pg.style.display = 'flex';
+    pg.classList.add('show');
+  } else {
+    pg.style.display = 'block';
+    pg.classList.add('show');
+  }
+  document.getElementById('page-title').textContent = PAGE_TITLES[p] || p;
+  if (p === 'reports' && !repChartsLoaded) { setTimeout(initRepCharts, 80); repChartsLoaded = true; }
+}
+
+/* ── DASHBOARD ── */
+function setGreeting() {
+  const h = new Date().getHours();
+  const g = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
+  document.getElementById('greeting').textContent = `${g}, Manager 👋`;
+  document.getElementById('dash-date').textContent = new Date().toLocaleDateString('en-KE', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+}
+
+let salesChart;
+function initDashCharts() {
+  const ctx = document.getElementById('salesChart');
+  if (!ctx) return;
+  salesChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
+      datasets: [
+        { label:'This Week', data:[32000,41000,38000,52000,47000,61000,47280], borderColor:'#1d5733', backgroundColor:'rgba(29,87,51,.08)', fill:true, tension:.42, pointBackgroundColor:'#1d5733', pointRadius:4, pointHoverRadius:6, borderWidth:2 },
+        { label:'Last Week', data:[28000,35000,32000,45000,42000,55000,43000], borderColor:'#c8991f', backgroundColor:'transparent', fill:false, tension:.42, pointBackgroundColor:'#c8991f', pointRadius:3, borderDash:[4,4], borderWidth:1.5 }
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ labels:{ font:{size:11}, color:'#3a5a4a', boxWidth:12 } } },
+      scales:{ x:{ grid:{display:false}, ticks:{font:{size:10},color:'#6f9080'} }, y:{ grid:{color:'rgba(0,0,0,0.04)'}, ticks:{font:{size:10},color:'#6f9080',callback:v=>v>=1000?Math.round(v/1000)+'K':v} } }
+    }
+  });
+}
+
+function switchFilter(f, el) {
+  document.querySelectorAll('#chart-filters .cat-pill').forEach(b => b.classList.remove('on'));
+  el.classList.add('on');
+  const data7  = [[32000,41000,38000,52000,47000,61000,47280],[28000,35000,32000,45000,42000,55000,43000]];
+  const data30 = [[280000,310000,295000,340000,320000,360000,335000],[260000,290000,275000,315000,300000,340000,315000]];
+  const data90 = [[820000,880000,950000,910000,1050000,1150000,1240000],[780000,840000,900000,870000,1000000,1100000,1190000]];
+  const labels7 = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const labels30 = ['W1','W2','W3','W4','W5','W6','W7'];
+  const labels90 = ['Jan','Feb','Mar','Apr','May','Jun','Jul'];
+  const map = { '7D':[data7,labels7], '30D':[data30,labels30], '90D':[data90,labels90] };
+  if (salesChart) {
+    const [d, l] = map[f];
+    salesChart.data.labels = l;
+    salesChart.data.datasets[0].data = d[0];
+    salesChart.data.datasets[1].data = d[1];
+    salesChart.update();
+  }
+}
+
+/* ── POS ── */
+function renderProds() {
+  const q = (document.getElementById('pos-q') || {}).value || '';
+  const grid = document.getElementById('prod-grid');
+  if (!grid) return;
+  const filtered = PRODUCTS.filter(p => {
+    const ms = q === '' || p.n.toLowerCase().includes(q.toLowerCase()) || p.s.toLowerCase().includes(q.toLowerCase());
+    const mc = posCat === 'All' || p.c === posCat;
+    return ms && mc;
+  });
+  grid.innerHTML = filtered.map(p => {
+    const sc = p.q === 0 ? 'oos' : p.q < 15 ? 'low' : 'ok';
+    const sl = p.q === 0 ? 'Out of stock' : p.q < 15 ? `${p.q} left` : `${p.q} in stock`;
+    return `<div class="prod-card${p.q===0?' oos':''}" id="pc-${p.id}" onclick="addToCart(${p.id})">
+      <div class="added-flash" id="f-${p.id}"></div>
+      <div class="pc-emoji">${p.e}</div>
+      <div class="pc-name">${p.n}</div>
+      <div class="pc-sku">${p.s}</div>
+      <div class="pc-bottom">
+        <div class="pc-price">KES ${p.r.toLocaleString()}</div>
+        <div class="pc-stock ${sc}">${sl}</div>
+      </div>
+    </div>`;
+  }).join('') || `<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--g200);font-size:13px">No products found</div>`;
+}
+
+function setCat(c, el) {
+  posCat = c;
+  document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('on'));
+  el.classList.add('on');
+  renderProds();
+}
+function filterProds() { renderProds(); }
+
+function addToCart(id) {
+  const p = PRODUCTS.find(x => x.id === id);
+  if (!p || p.q === 0) return;
+  const f = document.getElementById('f-' + id);
+  if (f) { f.style.opacity = '1'; setTimeout(() => f.style.opacity = '0', 350); }
+  const ex = cart.find(x => x.id === id);
+  if (ex) ex.qty = Math.min(ex.qty + 1, p.q);
+  else cart.push({ ...p, qty: 1 });
+  renderCart();
+}
+
+function renderCart() {
+  const el = document.getElementById('cart-body');
+  if (cart.length === 0) {
+    el.innerHTML = `<div class="cart-empty"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z"/></svg><p>Cart is empty</p><small>Tap a product to add it</small></div>`;
+    document.getElementById('chk-btn').disabled = true;
+  } else {
+    el.innerHTML = cart.map(i => `<div class="cart-item">
+      <div class="ci-emoji">${i.e}</div>
+      <div class="ci-info"><div class="ci-name">${i.n}</div><div class="ci-price">KES ${i.r} each</div></div>
+      <div class="ci-qty">
+        <div class="qty-b" onclick="chQty(${i.id},-1)">−</div>
+        <div class="qty-n">${i.qty}</div>
+        <div class="qty-b" onclick="chQty(${i.id},1)">+</div>
+      </div>
+      <div class="ci-total">KES ${(i.r*i.qty).toLocaleString()}</div>
+      <div class="ci-rm" onclick="rmCart(${i.id})">×</div>
+    </div>`).join('');
+    document.getElementById('chk-btn').disabled = false;
+  }
+  updateTotals();
+}
+
+function chQty(id, d) {
+  const i = cart.find(x => x.id === id);
+  if (i) { i.qty = Math.max(1, Math.min(i.qty + d, i.q)); renderCart(); }
+}
+function rmCart(id) { cart = cart.filter(x => x.id !== id); renderCart(); }
+function clearCart() { cart = []; renderCart(); }
+
+function updateTotals() {
+  const sub = cart.reduce((s, i) => s + i.r * i.qty, 0);
+  const vat = Math.round(sub * 0.16);
+  const tot = sub + vat;
+  document.getElementById('c-sub').textContent = 'KES ' + sub.toLocaleString();
+  document.getElementById('c-vat').textContent = 'KES ' + vat.toLocaleString();
+  document.getElementById('c-tot').textContent = 'KES ' + tot.toLocaleString();
+}
+
+function selPay(m) {
+  payM = m;
+  ['cash','mpesa','card'].forEach(k => document.getElementById('pc-'+k).classList.toggle('on', k === m));
+}
+
+function checkout() {
+  if (!cart.length) return;
+  const sub = cart.reduce((s, i) => s + i.r * i.qty, 0);
+  const vat = Math.round(sub * 0.16);
+  const tot = sub + vat;
+  document.getElementById('r-date').textContent = new Date().toLocaleDateString('en-KE',{year:'numeric',month:'short',day:'numeric'});
+  document.getElementById('r-pay').textContent = {cash:'Cash 💵',mpesa:'M-Pesa 📱',card:'Card 💳'}[payM];
+  document.getElementById('r-items').innerHTML = cart.map(i => `<div class="rct-item"><div><div class="rct-item-name">${i.n}</div><div class="rct-item-qty">× ${i.qty} @ KES ${i.r.toLocaleString()}</div></div><div class="rct-item-tot">KES ${(i.r*i.qty).toLocaleString()}</div></div>`).join('');
+  document.getElementById('r-sub').textContent = 'KES ' + sub.toLocaleString();
+  document.getElementById('r-vat').textContent = 'KES ' + vat.toLocaleString();
+  document.getElementById('r-tot').textContent = 'KES ' + tot.toLocaleString();
+  // Barcode
+  let bc = '';
+  for (let i = 0; i < 48; i++) {
+    const w = Math.random() > .65 ? 3 : 1.5;
+    const gap = Math.random() > .75 ? 3 : 1.5;
+    bc += `<div class="bc-bar" style="width:${w}px"></div><div style="width:${gap}px"></div>`;
+  }
+  document.getElementById('rct-bc').innerHTML = bc;
+  document.getElementById('overlay').classList.add('show');
+}
+
+function closeReceipt(e) { if (e.target.id === 'overlay') newSale(); }
+function newSale() { document.getElementById('overlay').classList.remove('show'); clearCart(); }
+
+/* ── INVENTORY ── */
+function renderInv() {
+  const tb = document.getElementById('inv-tbody');
+  if (!tb) return;
+  tb.innerHTML = PRODUCTS.map(p => {
+    const sc = p.q === 0 ? 'badge-red' : p.q < 15 ? 'badge-warn' : 'badge-green';
+    const sl = p.q === 0 ? 'Out of stock' : p.q < 15 ? 'Low stock' : 'In stock';
+    const snc = p.q < 15 ? (p.q === 0 ? 'color:var(--danger)' : 'color:var(--warn)') : 'color:var(--ink)';
+    return `<tr>
+      <td><div style="display:flex;align-items:center;gap:10px"><div class="prod-thumb">${p.e}</div><div><div class="tbl-name">${p.n}</div></div></div></td>
+      <td style="font-family:monospace;font-size:10px;color:var(--g200)">${p.s}</td>
+      <td><span class="badge badge-blue">${p.c}</span></td>
+      <td style="font-weight:700;color:var(--green)">KES ${p.r}</td>
+      <td style="color:var(--g600)">KES ${p.w}</td>
+      <td><span class="stk-num" style="${snc}">${p.q}</span></td>
+      <td><span class="badge ${sc}">${sl}</span></td>
+      <td><div style="display:flex;gap:5px">
+        <div class="act-btn edit" title="Edit" onclick="alert('✏️ Edit product: ${p.n}')"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg></div>
+        <div class="act-btn del" title="Delete" onclick="alert('🗑️ Delete: ${p.n}?')"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></div>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+
+/* ── REPORT CHARTS ── */
+function initRepCharts() {
+  const C = (id, cfg) => { const el = document.getElementById(id); if(el) new Chart(el, cfg); };
+  const ge = (el) => { const e = document.getElementById(el); if(e) return new Chart(e, {}); };
+
+  C('repBar', { type:'bar', data:{ labels:['W1','W2','W3','W4','W5','W6','W7','W8'], datasets:[{ label:'Revenue', data:[280000,310000,295000,340000,320000,360000,335000,395000], backgroundColor:'#1d5733', borderRadius:6, borderSkipped:false }] }, options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ x:{grid:{display:false},ticks:{font:{size:10},color:'#6f9080'}}, y:{grid:{color:'rgba(0,0,0,0.04)'},ticks:{font:{size:10},color:'#6f9080',callback:v=>v>=1000?Math.round(v/1000)+'K':v}} } } });
+
+  C('repDonut', { type:'doughnut', data:{ labels:['M-Pesa','Cash','Card'], datasets:[{ data:[62,28,10], backgroundColor:['#1d5733','#c8991f','#1a56db'], borderWidth:0, hoverOffset:4 }] }, options:{ responsive:false, cutout:'68%', plugins:{legend:{display:false}} } });
+
+  C('repStack', { type:'bar', data:{ labels:['Mon','Tue','Wed','Thu','Fri','Sat'], datasets:[{ label:'Wholesale', data:[18000,22000,20000,28000,25000,32000], backgroundColor:'#1d5733', borderRadius:[4,4,0,0], borderSkipped:false },{ label:'Retail', data:[14000,19000,18000,24000,22000,29000], backgroundColor:'#c8991f', borderRadius:[4,4,0,0], borderSkipped:false }] }, options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{labels:{font:{size:10},color:'#3a5a4a',boxWidth:10}}}, scales:{ x:{grid:{display:false},ticks:{font:{size:10},color:'#6f9080'}}, y:{grid:{color:'rgba(0,0,0,0.04)'},ticks:{font:{size:10},color:'#6f9080',callback:v=>v>=1000?Math.round(v/1000)+'K':v}} } } });
+
+  C('repCat', { type:'bar', data:{ labels:['Non-Woven','Pouches','Cups','Tissue','Diapers','Sanitary'], datasets:[{ label:'KES', data:[87400,68200,56900,38700,32000,28500], backgroundColor:['#163d26','#1d5733','#2a7347','#38955d','#c8991f','#e2b83a'], borderRadius:5, borderSkipped:false }] }, options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ x:{grid:{color:'rgba(0,0,0,0.04)'},ticks:{font:{size:9},color:'#6f9080',callback:v=>v>=1000?Math.round(v/1000)+'K':v}}, y:{grid:{display:false},ticks:{font:{size:10},color:'#3a5a4a'}} } } });
+}
+</script>
+</body>
+</html>
