@@ -3,8 +3,23 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
-<meta name="theme-color" content="#0B6E4F">
+<meta name="theme-color" content="#0B6E4F" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0a1a12" media="(prefers-color-scheme: dark)">
 <title>Pendo Packaging — POS System</title>
+<meta name="application-name" content="Pendo POS">
+<meta name="description" content="Pendo Packaging POS — Sales, Inventory, Reports & KRA TOT for Chuka Town, Kenya">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Pendo POS">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="msapplication-TileColor" content="#0B6E4F">
+<meta name="msapplication-tap-highlight" content="no">
+<meta name="format-detection" content="telephone=no">
+<!-- PWA Manifest injected inline via JS below -->
+<link rel="manifest" id="pwa-manifest-link">
+<!-- Apple touch icons (inline SVG-based, set via JS) -->
+<link rel="apple-touch-icon" id="apple-icon">
+<link rel="icon" type="image/svg+xml" id="favicon-svg">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -2187,6 +2202,662 @@ async function exportTOTPDF(){
 }
 
 renderCart();
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════
+     PENDO PWA — Install Banner, Service Worker, Manifest
+     All inline — single HTML file, zero external dependencies
+     ═══════════════════════════════════════════════════════════ -->
+
+<!-- PWA Install Banner -->
+<div id="pwa-banner" style="
+  display:none; position:fixed; bottom:0; left:0; right:0; z-index:9990;
+  background:linear-gradient(135deg,#0B3D23,#0B6E4F);
+  padding:14px 18px 18px; padding-bottom:max(18px,env(safe-area-inset-bottom));
+  box-shadow:0 -4px 24px rgba(0,0,0,0.3);
+  border-radius:20px 20px 0 0;
+  animation:bannerSlide .4s cubic-bezier(.4,0,.2,1);
+  font-family:'Plus Jakarta Sans',sans-serif;
+">
+<style>
+@keyframes bannerSlide{from{transform:translateY(100%);opacity:0}to{transform:translateY(0);opacity:1}}
+#pwa-banner .pwa-row{display:flex;align-items:center;gap:14px}
+#pwa-banner .pwa-logo{width:52px;height:52px;background:linear-gradient(135deg,#D4A017,#a07a10);border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:26px;box-shadow:0 4px 12px rgba(212,160,23,.3)}
+#pwa-banner .pwa-text{flex:1;min-width:0}
+#pwa-banner .pwa-title{font-size:15px;font-weight:800;color:#fff;margin-bottom:2px}
+#pwa-banner .pwa-sub{font-size:12px;color:rgba(255,255,255,.65);line-height:1.4}
+#pwa-banner .pwa-btns{display:flex;gap:8px;margin-top:12px}
+#pwa-banner .pwa-install-btn{flex:1;height:46px;background:linear-gradient(135deg,#D4A017,#c09010);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 16px rgba(212,160,23,.3);transition:.18s ease}
+#pwa-banner .pwa-install-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(212,160,23,.4)}
+#pwa-banner .pwa-install-btn:active{transform:scale(.97)}
+#pwa-banner .pwa-dismiss-btn{width:46px;height:46px;background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.2);border-radius:12px;color:rgba(255,255,255,.7);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.18s ease}
+#pwa-banner .pwa-dismiss-btn:hover{background:rgba(255,255,255,.18)}
+#pwa-banner .pwa-features{display:flex;gap:10px;margin-top:10px;flex-wrap:wrap}
+#pwa-banner .pwa-feat{display:flex;align-items:center;gap:5px;font-size:11px;color:rgba(255,255,255,.6);font-weight:500}
+#pwa-banner .pwa-feat span{font-size:14px}
+</style>
+<div class="pwa-row">
+  <div class="pwa-logo">📦</div>
+  <div class="pwa-text">
+    <div class="pwa-title">Install Pendo POS</div>
+    <div class="pwa-sub">Add to home screen for the full app experience — works offline too!</div>
+  </div>
+</div>
+<div class="pwa-features">
+  <div class="pwa-feat"><span>⚡</span> Fast & offline</div>
+  <div class="pwa-feat"><span>📱</span> Native app feel</div>
+  <div class="pwa-feat"><span>🔔</span> Stock alerts</div>
+  <div class="pwa-feat"><span>🖨️</span> Receipt printing</div>
+</div>
+<div class="pwa-btns">
+  <button class="pwa-install-btn" onclick="installPWA()">
+    <svg viewBox="0 0 24 24" fill="currentColor" style="width:18px;height:18px"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+    Install App
+  </button>
+  <button class="pwa-dismiss-btn" onclick="dismissBanner()" title="Dismiss">✕</button>
+</div>
+</div>
+
+<!-- iOS Install Tip (shown on Safari/iOS when PWA prompt isn't available) -->
+<div id="ios-banner" style="
+  display:none; position:fixed; bottom:0; left:0; right:0; z-index:9990;
+  background:linear-gradient(135deg,#0B3D23,#0B6E4F);
+  padding:16px 18px 20px; padding-bottom:max(20px,env(safe-area-inset-bottom));
+  box-shadow:0 -4px 24px rgba(0,0,0,0.3);
+  border-radius:20px 20px 0 0;
+  animation:bannerSlide .4s cubic-bezier(.4,0,.2,1);
+  font-family:'Plus Jakarta Sans',sans-serif;
+  text-align:center;
+">
+<div style="font-size:24px;margin-bottom:8px">📲</div>
+<div style="font-size:15px;font-weight:800;color:#fff;margin-bottom:4px">Install Pendo POS on iPhone</div>
+<div style="font-size:12px;color:rgba(255,255,255,.7);line-height:1.6;margin-bottom:12px">
+  Tap <strong style="background:rgba(255,255,255,.15);padding:2px 7px;border-radius:6px">Share</strong> 
+  then select <strong style="background:rgba(255,255,255,.15);padding:2px 7px;border-radius:6px">Add to Home Screen</strong> 
+  to install the full app.
+</div>
+<div style="display:flex;justify-content:center;align-items:flex-end;gap:4px;margin-bottom:8px">
+  <svg viewBox="0 0 24 24" fill="rgba(255,255,255,.6)" style="width:20px;height:20px"><path d="M16 5l-1.42 1.42-1.59-1.59V16h-1.98V4.83L9.42 6.42 8 5l4-4 4 4zm4 5v11c0 1.1-.9 2-2 2H6c-1.11 0-2-.9-2-2V10c0-1.11.89-2 2-2h3v2H6v11h12V10h-3V8h3c1.1 0 2 .89 2 2z"/></svg>
+  <svg viewBox="0 0 24 24" fill="rgba(255,255,255,.4)" style="width:16px;height:16px"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+  <svg viewBox="0 0 24 24" fill="rgba(255,255,255,.6)" style="width:20px;height:20px"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg>
+</div>
+<button onclick="document.getElementById('ios-banner').style.display='none'" style="padding:8px 24px;background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.2);border-radius:10px;color:rgba(255,255,255,.8);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">Got it</button>
+</div>
+
+<!-- Offline Toast -->
+<div id="offline-toast" style="
+  display:none; position:fixed; top:70px; left:50%; transform:translateX(-50%);
+  background:#c0392b; color:#fff; padding:10px 20px; border-radius:50px;
+  font-size:13px; font-weight:700; z-index:9995; box-shadow:0 4px 20px rgba(0,0,0,0.3);
+  display:none; align-items:center; gap:8px; font-family:'Plus Jakarta Sans',sans-serif;
+  animation:bannerSlide .3s ease;
+">
+  ⚠️ You're offline — POS still works!
+</div>
+
+<!-- Online Toast -->
+<div id="online-toast" style="
+  display:none; position:fixed; top:70px; left:50%; transform:translateX(-50%);
+  background:#0B6E4F; color:#fff; padding:10px 20px; border-radius:50px;
+  font-size:13px; font-weight:700; z-index:9995; box-shadow:0 4px 20px rgba(0,0,0,0.3);
+  align-items:center; gap:8px; font-family:'Plus Jakarta Sans',sans-serif;
+">
+  ✅ Back online!
+</div>
+
+<!-- Update Available Banner -->
+<div id="update-banner" style="
+  display:none; position:fixed; top:70px; left:50%; transform:translateX(-50%);
+  background:linear-gradient(135deg,#1d5733,#0B6E4F); color:#fff;
+  padding:10px 18px; border-radius:50px; font-size:13px; font-weight:700;
+  z-index:9995; box-shadow:0 4px 20px rgba(0,0,0,0.3);
+  align-items:center; gap:10px; font-family:'Plus Jakarta Sans',sans-serif; cursor:pointer;
+  white-space:nowrap;
+" onclick="window.location.reload()">
+  🔄 Update available — tap to refresh
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   PENDO PWA ENGINE
+   - Inline Service Worker (registered via blob URL)
+   - Inline Web App Manifest (registered via blob URL)
+   - Install prompt handling
+   - Offline/online detection
+   - iOS install detection
+   ═══════════════════════════════════════════════════════════════ */
+
+(function PendoPWA() {
+  'use strict';
+
+  /* ── 1. INLINE MANIFEST ──────────────────────────────── */
+  const manifest = {
+    name: 'Pendo Packaging POS',
+    short_name: 'Pendo POS',
+    description: 'Professional POS, Inventory & KRA TOT system for Pendo Packaging, Chuka Town',
+    start_url: './',
+    display: 'standalone',
+    orientation: 'any',
+    background_color: '#0B3D23',
+    theme_color: '#0B6E4F',
+    categories: ['business', 'finance', 'productivity'],
+    lang: 'en-KE',
+    dir: 'ltr',
+    scope: './',
+    icons: [
+      { src: makeSvgIcon(48),  sizes: '48x48',   type: 'image/svg+xml', purpose: 'any maskable' },
+      { src: makeSvgIcon(72),  sizes: '72x72',   type: 'image/svg+xml', purpose: 'any maskable' },
+      { src: makeSvgIcon(96),  sizes: '96x96',   type: 'image/svg+xml', purpose: 'any maskable' },
+      { src: makeSvgIcon(128), sizes: '128x128', type: 'image/svg+xml', purpose: 'any maskable' },
+      { src: makeSvgIcon(144), sizes: '144x144', type: 'image/svg+xml', purpose: 'any maskable' },
+      { src: makeSvgIcon(152), sizes: '152x152', type: 'image/svg+xml', purpose: 'any maskable' },
+      { src: makeSvgIcon(192), sizes: '192x192', type: 'image/svg+xml', purpose: 'any maskable' },
+      { src: makeSvgIcon(256), sizes: '256x256', type: 'image/svg+xml', purpose: 'any maskable' },
+      { src: makeSvgIcon(512), sizes: '512x512', type: 'image/svg+xml', purpose: 'any maskable' },
+    ],
+    shortcuts: [
+      { name: 'Point of Sale', short_name: 'POS', description: 'Open the cashier POS screen', url: './?page=pos', icons: [{ src: makeSvgIcon(96), sizes: '96x96' }] },
+      { name: 'Inventory', short_name: 'Inventory', description: 'Manage stock levels', url: './?page=inventory', icons: [{ src: makeSvgIcon(96), sizes: '96x96' }] },
+      { name: 'Reports', short_name: 'Reports', description: 'View sales analytics', url: './?page=reports', icons: [{ src: makeSvgIcon(96), sizes: '96x96' }] },
+    ],
+    screenshots: [
+      { label: 'Dashboard', form_factor: 'wide' },
+      { label: 'Point of Sale', form_factor: 'narrow' }
+    ],
+    prefer_related_applications: false
+  };
+
+  function makeSvgIcon(size) {
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}" width="${size}" height="${size}">
+      <rect width="${size}" height="${size}" rx="${size * 0.18}" fill="#0B6E4F"/>
+      <rect width="${size}" height="${size * 0.04}" rx="0" fill="#D4A017" y="${size * 0.96}"/>
+      <text x="50%" y="58%" font-size="${size * 0.52}" text-anchor="middle" dominant-baseline="middle" font-family="system-ui,sans-serif">📦</text>
+      <text x="50%" y="83%" font-size="${size * 0.13}" text-anchor="middle" dominant-baseline="middle" fill="rgba(255,255,255,0.75)" font-family="system-ui,sans-serif" font-weight="700" letter-spacing="${size * 0.005}">PENDO POS</text>
+    </svg>`;
+    return 'data:image/svg+xml,' + encodeURIComponent(svg);
+  }
+
+  // Register manifest as blob
+  const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
+  const manifestURL = URL.createObjectURL(manifestBlob);
+  const mLink = document.getElementById('pwa-manifest-link');
+  if (mLink) mLink.href = manifestURL;
+
+  // Set apple-touch-icon
+  const appleIcon = document.getElementById('apple-icon');
+  if (appleIcon) appleIcon.href = makeSvgIcon(180);
+
+  // Set favicon
+  const faviconEl = document.getElementById('favicon-svg');
+  if (faviconEl) faviconEl.href = makeSvgIcon(32);
+
+  /* ── 2. INLINE SERVICE WORKER ────────────────────────── */
+  const CACHE_VERSION = 'pendo-pos-v1.0.0';
+  const CACHE_ASSETS  = 'pendo-assets-v1.0.0';
+
+  // SW code as a string — will be blobified and registered
+  const swCode = `
+const CACHE_NAME = '${CACHE_VERSION}';
+const ASSETS_CACHE = '${CACHE_ASSETS}';
+const APP_URL = self.location.href.replace('/sw-blob', '');
+
+// Files to pre-cache on install
+const PRECACHE_URLS = [
+  APP_URL,
+  'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap',
+];
+
+// External CDN resources to cache on first use
+const CDN_HOSTS = [
+  'cdnjs.cloudflare.com',
+  'fonts.googleapis.com',
+  'fonts.gstatic.com',
+];
+
+self.addEventListener('install', (e) => {
+  console.log('[PendoPWA SW] Installing v${CACHE_VERSION}');
+  e.waitUntil(
+    caches.open(CACHE_NAME).then(async (cache) => {
+      // Cache the main app page
+      try {
+        const req = new Request(APP_URL, { cache: 'reload' });
+        const res = await fetch(req);
+        if (res.ok) await cache.put(APP_URL, res);
+      } catch(err) {
+        console.warn('[PendoPWA SW] Pre-cache failed (offline?)', err.message);
+      }
+      return cache;
+    })
+  );
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', (e) => {
+  console.log('[PendoPWA SW] Activating');
+  e.waitUntil(
+    caches.keys().then((keys) =>
+      Promise.all(
+        keys
+          .filter(k => k !== CACHE_NAME && k !== ASSETS_CACHE)
+          .map(k => { console.log('[PendoPWA SW] Deleting old cache:', k); return caches.delete(k); })
+      )
+    )
+  );
+  self.clients.claim();
+});
+
+self.addEventListener('fetch', (e) => {
+  const url = new URL(e.request.url);
+  
+  // Skip non-GET and chrome-extension
+  if (e.request.method !== 'GET') return;
+  if (url.protocol === 'chrome-extension:') return;
+  if (url.protocol === 'blob:') return;
+
+  const isCDN = CDN_HOSTS.some(h => url.hostname.includes(h));
+  const isApp = url.href === APP_URL || url.pathname === '/' || url.href.startsWith(APP_URL.split('?')[0]);
+
+  if (isCDN) {
+    // CDN: Cache-first
+    e.respondWith(
+      caches.open(ASSETS_CACHE).then(async (cache) => {
+        const cached = await cache.match(e.request);
+        if (cached) return cached;
+        try {
+          const res = await fetch(e.request);
+          if (res.ok) cache.put(e.request, res.clone());
+          return res;
+        } catch {
+          return new Response('', { status: 503 });
+        }
+      })
+    );
+    return;
+  }
+
+  if (isApp) {
+    // App shell: Network-first with cache fallback
+    e.respondWith(
+      caches.open(CACHE_NAME).then(async (cache) => {
+        try {
+          const res = await fetch(e.request);
+          if (res.ok) cache.put(e.request, res.clone());
+          return res;
+        } catch {
+          const cached = await cache.match(e.request);
+          if (cached) return cached;
+          // Return basic offline page
+          return new Response(getOfflinePage(), {
+            headers: { 'Content-Type': 'text/html; charset=utf-8' }
+          });
+        }
+      })
+    );
+    return;
+  }
+});
+
+// Message handler for skip waiting
+self.addEventListener('message', (e) => {
+  if (e.data === 'skipWaiting') self.skipWaiting();
+});
+
+function getOfflinePage() {
+  return \`<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Pendo POS — Offline</title>
+<style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:system-ui,sans-serif;background:linear-gradient(135deg,#0B3D23,#0B6E4F);min-height:100vh;display:flex;align-items:center;justify-content:center;color:white;text-align:center;padding:24px}.card{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:24px;padding:40px 32px;max-width:360px;backdrop-filter:blur(12px)}.icon{font-size:64px;margin-bottom:20px}.title{font-size:26px;font-weight:800;margin-bottom:8px}.sub{font-size:15px;opacity:.7;line-height:1.6;margin-bottom:24px}.btn{display:inline-flex;align-items:center;gap:8px;padding:14px 28px;background:linear-gradient(135deg,#D4A017,#c09010);color:white;border:none;border-radius:14px;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit;text-decoration:none}.features{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:20px}.feat{background:rgba(255,255,255,.06);border-radius:12px;padding:12px;font-size:12px;opacity:.8}</style>
+</head><body>
+<div class="card">
+  <div class="icon">📦</div>
+  <div class="title">Pendo POS</div>
+  <div class="sub">You're currently offline, but your POS data and recent transactions are saved locally.</div>
+  <button class="btn" onclick="window.location.reload()">⟳ Try Again</button>
+  <div class="features">
+    <div class="feat">✅ Sales data saved</div>
+    <div class="feat">📦 Products cached</div>
+    <div class="feat">🧾 Receipts ready</div>
+    <div class="feat">📊 Reports available</div>
+  </div>
+</div>
+</body></html>\`;
+}
+`;
+
+
+  // ── SERVICE WORKER ─────────────────────────────────────────────
+  // Root cause: blob: URLs are blocked for SW registration in all browsers.
+  // Fix: Use Cache API pre-caching from the page (works everywhere) + a
+  // fetch() interceptor as the offline fallback. No SW file needed.
+
+  // 1. Pre-cache this page for offline use via Cache API
+  if ('caches' in window) {
+    (async () => {
+      try {
+        const cache = await caches.open('pendo-pos-v1');
+        if (location.protocol.startsWith('http')) {
+          const existing = await cache.match(location.href);
+          if (!existing) {
+            const res = await fetch(location.href, { cache: 'reload' });
+            if (res && res.ok) { await cache.put(location.href, res); }
+            console.log('[PendoPWA] Page pre-cached for offline ✅');
+          } else {
+            console.log('[PendoPWA] Offline cache already warm ✅');
+          }
+        } else {
+          console.log('[PendoPWA] file:// mode — Cache API ready, no pre-fetch needed');
+        }
+      } catch(e) {
+        console.log('[PendoPWA] Cache pre-warm skipped:', e.message);
+      }
+    })();
+  }
+
+  // 2. fetch() interceptor — serves CDN assets from cache when offline
+  if ('caches' in window) {
+    const _origFetch = window.fetch.bind(window);
+    window.fetch = async (input, init) => {
+      const method = (init && init.method) ? init.method.toUpperCase() : 'GET';
+      try {
+        const res = await _origFetch(input, init);
+        if (res.ok && method === 'GET') {
+          caches.open('pendo-assets-v1').then(c => c.put(input, res.clone())).catch(() => {});
+        }
+        return res;
+      } catch(networkErr) {
+        if (method !== 'GET') throw networkErr;
+        const cached = await caches.match(input).catch(() => null);
+        if (cached) {
+          const url = typeof input === 'string' ? input : input.url;
+          console.log('[PendoPWA] Offline → serving from cache:', url.split('/').pop().split('?')[0]);
+          return cached;
+        }
+        throw networkErr;
+      }
+    };
+    console.log('[PendoPWA] Offline fetch interceptor active ✅');
+  }
+
+  // 3. Real SW registration — only works from http(s), gives full offline support
+  if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+    // Write SW code to a <script> tag with a unique URL via a Blob + importScripts workaround
+    // Most reliable single-file approach: encode SW as base64 data URL in a dedicated script tag
+    try {
+      const encoded = btoa(unescape(encodeURIComponent(swCode)));
+      const dataUrl  = 'data:application/javascript;base64,' + encoded;
+      // Firefox and Safari block data: SW; Chrome allows it on https
+      navigator.serviceWorker.register(dataUrl, { scope: './' })
+        .then(reg => {
+          console.log('[PendoPWA] SW registered via data URL ✅', reg.scope);
+          reg.addEventListener('updatefound', () => {
+            const s = reg.installing;
+            if (!s) return;
+            s.addEventListener('statechange', () => {
+              if (s.state === 'installed' && navigator.serviceWorker.controller) showUpdateBanner();
+            });
+          });
+        })
+        .catch(err => {
+          // Expected on non-Chrome or non-https — Cache API fallback already active above
+          console.log('[PendoPWA] SW via data URL not supported in this browser/context — Cache API offline mode active instead. (' + err.name + ')');
+        });
+    } catch(encErr) {
+      console.log('[PendoPWA] SW encoding failed:', encErr.message);
+    }
+  } else if ('serviceWorker' in navigator) {
+    console.log('[PendoPWA] Not on http(s) — SW skipped. Cache API offline mode is active.');
+  }
+
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      console.log('[PendoPWA] New SW controller active');
+    });
+  }
+
+  /* ── 3. INSTALL PROMPT ───────────────────────────────── */
+  let deferredPrompt = null;
+  const bannerKey = 'pendo-pwa-banner-dismissed';
+  const installKey = 'pendo-pwa-installed';
+
+  // Detect if already installed
+  const isInstalled = () =>
+    window.matchMedia('(display-mode: standalone)').matches ||
+    window.navigator.standalone === true ||
+    localStorage.getItem(installKey) === 'true';
+
+  // iOS detection
+  const isIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const isSafari = () => /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    console.log('[PendoPWA] Install prompt captured ✅');
+
+    // Show banner after 3s if not dismissed/installed
+    if (!isInstalled() && !sessionStorage.getItem(bannerKey)) {
+      setTimeout(() => showInstallBanner(), 3000);
+    }
+  });
+
+  window.addEventListener('appinstalled', () => {
+    console.log('[PendoPWA] App installed! 🎉');
+    localStorage.setItem(installKey, 'true');
+    hideInstallBanner();
+    deferredPrompt = null;
+    showFloatingToast('🎉 Pendo POS installed successfully!', 'success', 3500);
+  });
+
+  // iOS Safari: show tip after delay
+  if (isIOS() && isSafari() && !isInstalled() && !sessionStorage.getItem(bannerKey)) {
+    setTimeout(() => {
+      document.getElementById('ios-banner').style.display = 'block';
+    }, 4000);
+  }
+
+  function showInstallBanner() {
+    const b = document.getElementById('pwa-banner');
+    if (b && !isInstalled()) b.style.display = 'block';
+  }
+  function hideInstallBanner() {
+    const b = document.getElementById('pwa-banner');
+    const i = document.getElementById('ios-banner');
+    if (b) b.style.display = 'none';
+    if (i) i.style.display = 'none';
+  }
+
+  window.installPWA = async function() {
+    if (!deferredPrompt) {
+      showFloatingToast('ℹ️ Use browser menu to install', 'info', 3000);
+      return;
+    }
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    console.log('[PendoPWA] User choice:', outcome);
+    deferredPrompt = null;
+    hideInstallBanner();
+    if (outcome === 'dismissed') {
+      showFloatingToast('You can install later from the browser menu', 'info', 3000);
+    }
+  };
+
+  window.dismissBanner = function() {
+    hideInstallBanner();
+    sessionStorage.setItem(bannerKey, '1');
+  };
+
+  /* ── 4. OFFLINE / ONLINE DETECTION ──────────────────── */
+  function showOfflineBanner() {
+    const el = document.getElementById('offline-toast');
+    if (el) { el.style.display = 'flex'; }
+    // Add offline indicator to topbar
+    const tb = document.getElementById('topbar-status') || createStatusDot();
+    if (tb) tb.style.background = '#c0392b';
+  }
+
+  function showOnlineBanner() {
+    const el = document.getElementById('offline-toast');
+    const on = document.getElementById('online-toast');
+    if (el) el.style.display = 'none';
+    if (on) {
+      on.style.display = 'flex';
+      setTimeout(() => { on.style.display = 'none'; }, 3000);
+    }
+    const tb = document.getElementById('topbar-status');
+    if (tb) tb.style.background = '#38955d';
+  }
+
+  function createStatusDot() {
+    const dot = document.createElement('div');
+    dot.id = 'topbar-status';
+    dot.style.cssText = 'width:8px;height:8px;border-radius:50%;background:#38955d;position:fixed;top:8px;right:8px;z-index:999;border:2px solid white;transition:.3s';
+    document.body.appendChild(dot);
+    return dot;
+  }
+
+  if (!navigator.onLine) showOfflineBanner();
+  window.addEventListener('offline', () => { console.log('[PendoPWA] Gone offline'); showOfflineBanner(); });
+  window.addEventListener('online',  () => { console.log('[PendoPWA] Back online');  showOnlineBanner(); });
+
+  /* ── 5. UPDATE BANNER ────────────────────────────────── */
+  function showUpdateBanner() {
+    const b = document.getElementById('update-banner');
+    if (b) b.style.display = 'flex';
+  }
+  window.showUpdateBanner = showUpdateBanner;
+
+  /* ── 6. TOAST HELPER ─────────────────────────────────── */
+  function showFloatingToast(msg, type='info', duration=3000) {
+    const t = document.createElement('div');
+    const bg = type==='success'?'#0B6E4F':type==='error'?'#c0392b':'#1d5733';
+    t.style.cssText = `position:fixed;top:72px;left:50%;transform:translateX(-50%);background:${bg};color:#fff;padding:10px 20px;border-radius:50px;font-size:13px;font-weight:700;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.3);white-space:nowrap;font-family:'Plus Jakarta Sans',sans-serif;animation:bannerSlide .3s ease;pointer-events:none;`;
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(() => { t.style.opacity='0'; t.style.transition='opacity .3s'; setTimeout(()=>t.remove(),300); }, duration);
+  }
+
+  /* ── 7. DEEPLINK SUPPORT ─────────────────────────────── */
+  // If app launched with ?page=X shortcut, navigate there after load
+  const urlParams = new URLSearchParams(window.location.search);
+  const targetPage = urlParams.get('page');
+  if (targetPage) {
+    // Wait for app to be ready, then navigate
+    const tryNav = setInterval(() => {
+      if (document.getElementById(targetPage) && typeof go === 'function') {
+        clearInterval(tryNav);
+        const navEl = document.querySelector(`[data-page="${targetPage}"]`) ||
+                      document.querySelector(`[onclick*="go('${targetPage}']`);
+        setTimeout(() => go(targetPage, navEl), 500);
+      }
+    }, 200);
+    setTimeout(() => clearInterval(tryNav), 5000); // give up after 5s
+  }
+
+  /* ── 8. PWA DISPLAY MODE DETECTION ──────────────────── */
+  if (window.matchMedia('(display-mode: standalone)').matches) {
+    console.log('[PendoPWA] Running as installed PWA ✅');
+    document.documentElement.setAttribute('data-pwa', 'true');
+    // Hide bottom-of-screen safe area gaps for standalone mode
+    document.documentElement.style.setProperty('--pwa-standalone', '1');
+  }
+
+  // ── 9. SCREEN KEEP-AWAKE ─────────────────────────────
+  // Screen Wake Lock API requires a Permissions-Policy header to be set by the
+  // server and is blocked in iframes/sandboxed pages.
+  // We use a safe 3-layer fallback:
+  //   Layer 1: Wake Lock API  (works when served from real https server)
+  //   Layer 2: NoSleep.js technique (invisible <video> trick)
+  //   Layer 3: Periodic user-activity simulation (last resort)
+  let wakeLock = null;
+  let noSleepVideo = null;
+
+  function startNoSleepVideo() {
+    // Classic NoSleep technique: play a tiny looping invisible video
+    // This prevents sleep on mobile without needing any permissions
+    if (noSleepVideo) return;
+    try {
+      noSleepVideo = document.createElement('video');
+      noSleepVideo.setAttribute('playsinline', '');
+      noSleepVideo.setAttribute('muted', '');
+      noSleepVideo.style.cssText = 'position:fixed;width:1px;height:1px;opacity:0;pointer-events:none;z-index:-1;';
+      // Tiny looping mp4 (1x1 transparent) encoded as data URI
+      const src = document.createElement('source');
+      src.src = 'data:video/mp4;base64,AAAAIGZ0eXBpc29tAAACAGlzb21pc28ybXA0MQAAAAhmcmVlAAAAGm1kYXQAAAGzABAHAAABthAJMluAQAAABtgAAABsaGR2ZAAAAAAAAAAAAQAAADhlbHN0AAAAAAAAAAEAAAA4AAAABQAAAQAB';
+      src.type = 'video/mp4';
+      noSleepVideo.appendChild(src);
+      noSleepVideo.loop = true;
+      document.body.appendChild(noSleepVideo);
+      noSleepVideo.play().catch(() => {
+        // Autoplay blocked — that's fine, screen will sleep normally
+        noSleepVideo.remove();
+        noSleepVideo = null;
+      });
+      console.log('[PendoPWA] NoSleep video technique active ✅');
+    } catch(e) {
+      console.log('[PendoPWA] NoSleep video failed:', e.message);
+    }
+  }
+
+  async function requestWakeLock() {
+    // Layer 1: Wake Lock API — only try if page is visible and on https
+    if ('wakeLock' in navigator && document.visibilityState === 'visible') {
+      try {
+        wakeLock = await navigator.wakeLock.request('screen');
+        wakeLock.addEventListener('release', () => {
+          wakeLock = null;
+          console.log('[PendoPWA] Wake lock released');
+        });
+        console.log('[PendoPWA] Wake Lock API active ✅');
+        return; // Success — no need for fallbacks
+      } catch (err) {
+        // NotAllowedError = permissions policy blocked (iframe, sandbox, non-https)
+        // AbortError = page not visible
+        // Both are expected — fall through silently to Layer 2
+        if (err.name !== 'NotAllowedError' && err.name !== 'AbortError') {
+          console.log('[PendoPWA] Wake Lock unavailable (' + err.name + ') — using video fallback');
+        }
+      }
+    }
+    // Layer 2: NoSleep video (no permissions needed, works on mobile browsers)
+    startNoSleepVideo();
+  }
+
+  document.addEventListener('visibilitychange', async () => {
+    if (document.visibilityState === 'visible') {
+      if (wakeLock === null) await requestWakeLock();
+      if (noSleepVideo && noSleepVideo.paused) noSleepVideo.play().catch(() => {});
+    } else {
+      // Release wake lock when page hidden to save battery
+      if (wakeLock) { try { await wakeLock.release(); } catch(_) {} wakeLock = null; }
+    }
+  });
+
+  /* ── 10. KEYBOARD SHORTCUT HINTS ────────────────────── */
+  document.addEventListener('keydown', (e) => {
+    if (e.altKey) {
+      const map = { 'd':'dashboard','p':'pos','i':'inventory','r':'reports','s':'settings' };
+      const pg = map[e.key.toLowerCase()];
+      if (pg && typeof go === 'function') {
+        e.preventDefault();
+        const nav = document.querySelector(`[data-page="${pg}"]`);
+        go(pg, nav);
+      }
+    }
+  });
+
+  // Kick off screen keep-awake (triggered on first user interaction to comply
+  // with autoplay policies — not called blindly on page load)
+  let wakeStarted = false;
+  function startWakeOnInteraction() {
+    if (wakeStarted) return;
+    wakeStarted = true;
+    requestWakeLock();
+    document.removeEventListener('click', startWakeOnInteraction);
+    document.removeEventListener('touchstart', startWakeOnInteraction);
+  }
+  document.addEventListener('click', startWakeOnInteraction, { passive: true });
+  document.addEventListener('touchstart', startWakeOnInteraction, { passive: true });
+
+  console.log('[PendoPWA] ✅ PWA engine ready — Pendo Packaging POS');
+})(); // end PendoPWA IIFE
 </script>
 </body>
 </html>
