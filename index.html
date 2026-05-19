@@ -1068,6 +1068,11 @@ tbody tr:hover td{background:var(--g50)}
       <pre id="thermal-preview" style="font-family:'Courier New',monospace;font-size:11px;line-height:1.55;padding:14px;white-space:pre-wrap;color:var(--ink);margin:0;overflow-x:auto"></pre>
     </div>
 
+    <!-- Back to Dashboard button -->
+    <div style="padding:0 16px 12px">
+      <button onclick="closePrintPanel()" style="width:100%;padding:14px;border-radius:12px;background:var(--ink);color:#fff;border:none;font-size:14px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px">&#8592; Back to Dashboard</button>
+    </div>
+
     <!-- Bottom safe area -->
     <div style="height:env(safe-area-inset-bottom,16px)"></div>
   </div>
@@ -1685,6 +1690,12 @@ function openPrintPanel(){
 function closePrintPanel(){
   const panel=document.getElementById('thermal-panel');
   panel.style.display='none';
+  // Close receipt overlay and return to dashboard
+  const overlay=document.getElementById('overlay');
+  if(overlay) overlay.classList.remove('show');
+  if(typeof clearCart==='function') clearCart();
+  const dashNav=document.querySelector('[data-page=dashboard]');
+  if(typeof go==='function' && dashNav) go('dashboard', dashNav);
 }
 
 // ── BT STATUS UI ──────────────────────────────────────────
