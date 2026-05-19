@@ -1011,10 +1011,66 @@ tbody tr:hover td{background:var(--g50)}
       </div>
     </div>
     <div class="rpacts">
-      <button class="rpbtn rpprint" onclick="printReceipt()">🖨️ Print</button>
+      <button class="rpbtn rpprint" onclick="openPrintPanel()">🖨️ Print</button>
       <button class="rpbtn" style="background:var(--gold);color:#fff;flex:1" onclick="saveReceiptPDF()">⬇ PDF</button>
       <button class="rpbtn rpnew" onclick="newSale()">New Sale</button>
     </div>
+  </div>
+</div>
+
+<!-- ══ THERMAL PRINT PANEL ══════════════════════════════════ -->
+<div id="thermal-panel" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(10,26,18,.7);backdrop-filter:blur(4px);align-items:flex-end;justify-content:center" onclick="if(event.target===this)closePrintPanel()">
+  <div style="background:var(--white);border-radius:20px 20px 0 0;padding:0;width:100%;max-width:480px;max-height:92vh;overflow-y:auto;box-shadow:0 -8px 40px rgba(0,0,0,.25)">
+    <!-- Handle -->
+    <div style="display:flex;justify-content:center;padding:12px 0 4px"><div style="width:40px;height:4px;border-radius:2px;background:var(--g100)"></div></div>
+    <!-- Header -->
+    <div style="padding:12px 20px 16px;border-bottom:1px solid var(--g100)">
+      <div style="font-size:17px;font-weight:800;color:var(--ink)">🖨️ Print Receipt</div>
+      <div style="font-size:12px;color:var(--g400);margin-top:2px">P58E Thermal Printer — 58mm roll</div>
+    </div>
+
+    <!-- BT Status Bar -->
+    <div id="bt-status-bar" style="margin:14px 16px 0;padding:10px 14px;border-radius:10px;background:var(--g50);border:1.5px solid var(--g100);display:flex;align-items:center;gap:10px">
+      <div id="bt-dot" style="width:10px;height:10px;border-radius:50%;background:var(--g200);flex-shrink:0;transition:.3s"></div>
+      <div>
+        <div id="bt-status-text" style="font-size:13px;font-weight:700;color:var(--ink)">Not connected</div>
+        <div id="bt-status-sub" style="font-size:11px;color:var(--g400)">Tap "Connect Printer" to pair your P58E</div>
+      </div>
+    </div>
+
+    <!-- Action buttons -->
+    <div style="padding:16px;display:flex;flex-direction:column;gap:10px">
+
+      <!-- Connect / Print button -->
+      <button id="bt-main-btn" onclick="thermalMainAction()" style="width:100%;padding:16px;border-radius:12px;background:var(--green);color:#fff;border:none;font-size:15px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;min-height:56px">
+        <span>📡</span><span id="bt-main-label">Connect Printer</span>
+      </button>
+
+      <!-- Download TXT fallback -->
+      <button onclick="downloadReceiptTxt()" style="width:100%;padding:14px;border-radius:12px;background:var(--pale);color:var(--green);border:1.5px solid var(--mint);font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px">
+        <span>📥</span> Download as .txt (use with PrintHand)
+      </button>
+
+      <!-- Browser print -->
+      <button onclick="browserPrint()" style="width:100%;padding:14px;border-radius:12px;background:var(--g50);color:var(--g600);border:1.5px solid var(--g100);font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px">
+        <span>🖥️</span> Print via Browser (WiFi/USB printer)
+      </button>
+
+      <!-- PrintHand link -->
+      <a href="https://play.google.com/store/apps/details?id=com.dynamixsoftware.printershare" target="_blank" rel="noopener" style="width:100%;padding:12px;border-radius:12px;background:#fff;color:var(--g400);border:1.5px dashed var(--g100);font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none">
+        📲 Get PrintHand app on Google Play
+      </a>
+    </div>
+
+    <!-- Receipt preview -->
+    <div style="margin:0 16px 16px;border-radius:12px;background:#fafafa;border:1px solid var(--g100);overflow:hidden">
+      <div style="padding:10px 14px;background:var(--g50);border-bottom:1px solid var(--g100);font-size:11px;font-weight:700;color:var(--g400);text-transform:uppercase;letter-spacing:.8px">Receipt Preview (58mm)</div>
+      <pre id="thermal-preview" style="font-family:'Courier New',monospace;font-size:11px;line-height:1.55;padding:14px;white-space:pre-wrap;color:var(--ink);margin:0;overflow-x:auto"></pre>
+    </div>
+
+    <!-- Bottom safe area -->
+    <div style="height:env(safe-area-inset-bottom,16px)"></div>
+  </div>
   </div>
 </div>
 
@@ -1394,7 +1450,12 @@ function reprintSale(idx){
   document.getElementById('r-sub').textContent='KES '+s.sub.toLocaleString();
   document.getElementById('r-tot').textContent='KES '+s.tot.toLocaleString();
   const rvEl=document.querySelector('.rpmv');if(rvEl)rvEl.textContent=s.num;
-  document.getElementById('overlay').classList.add('show');
+  // Show thermal print panel directly (no need to open overlay)
+  const txt=buildThermalReceipt(s);
+  document.getElementById('thermal-preview').textContent=txt;
+  const panel=document.getElementById('thermal-panel');
+  panel.style.display='flex';
+  updateBtUI();
 }
 
 function exportCashierCSV(){
@@ -1475,18 +1536,387 @@ function showLoader(){document.getElementById('pdfLoader').classList.add('show')
 function hideLoader(){document.getElementById('pdfLoader').classList.remove('show');}
 
 // ══ RECEIPT — PRINT ════════════════════════════════════
-function printReceipt(){
+// ══════════════════════════════════════════════════════════
+// THERMAL PRINTING — P58E Bluetooth (58mm, 32 chars/line)
+// ══════════════════════════════════════════════════════════
+
+const THERMAL = {
+  W: 32,           // chars per line on 58mm paper
+  device: null,
+  characteristic: null,
+  connected: false,
+  // ESC/POS commands
+  ESC_INIT:   [0x1B, 0x40],
+  ALIGN_CTR:  [0x1B, 0x61, 0x01],
+  ALIGN_L:    [0x1B, 0x61, 0x00],
+  BOLD_ON:    [0x1B, 0x45, 0x01],
+  BOLD_OFF:   [0x1B, 0x45, 0x00],
+  DBLW_ON:    [0x1D, 0x21, 0x11],
+  DBLW_OFF:   [0x1D, 0x21, 0x00],
+  FEED3:      [0x0A, 0x0A, 0x0A],
+  CUT:        [0x1D, 0x56, 0x42, 0x00],
+};
+
+// Sanitise text for PC437 charset (no fancy Unicode)
+function thermalSanitise(s){
+  return String(s)
+    .replace(/['']/g,"'").replace(/[""]/g,'"')
+    .replace(/–/g,'-').replace(/—/g,'--')
+    .replace(/…/g,'...').replace(/•/g,'*')
+    .replace(/[^\x20-\x7E]/g,'?');
+}
+
+// Centre a string within W columns
+function thermalCentre(s){
+  s=thermalSanitise(s).substring(0,THERMAL.W);
+  const pad=Math.max(0,Math.floor((THERMAL.W-s.length)/2));
+  return ' '.repeat(pad)+s;
+}
+
+// Key-value line: label left, value right, padded to W
+function thermalKV(label,value){
+  label=thermalSanitise(label); value=thermalSanitise(value);
+  const maxL=THERMAL.W-value.length-1;
+  if(label.length>maxL)label=label.substring(0,maxL);
+  const spaces=THERMAL.W-label.length-value.length;
+  return label+' '.repeat(Math.max(1,spaces))+value;
+}
+
+// Divider line
+function thermalDiv(ch='-'){return ch.repeat(THERMAL.W);}
+
+// Build the plain-text receipt for the P58E
+function buildThermalReceipt(sale){
+  const W=THERMAL.W;
+  const lines=[];
+  const push=s=>lines.push(s);
+
+  // Header
+  push(thermalCentre('PENDO PACKAGING'));
+  push(thermalCentre('Chuka Town, Tharaka-Nithi'));
+  push(thermalCentre('Tel: 0700-000-000'));
+  push(thermalDiv());
+  push(thermalCentre('RECEIPT'));
+  push(thermalDiv());
+
+  // Meta
+  push(thermalKV('Receipt:',sale.num||''));
+  push(thermalKV('Date:',sale.date||''));
+  push(thermalKV('Cashier:',sale.cashier||''));
+  push(thermalKV('Payment:',sale.pay||''));
+  push(thermalDiv());
+
+  // Items
+  (sale.lines||[]).forEach(l=>{
+    const name=thermalSanitise(l.n).substring(0,W);
+    push(name);
+    const qtyStr='  x'+l.qty+' @ KES '+l.r.toLocaleString();
+    const totStr='KES '+l.t.toLocaleString();
+    push(thermalKV(qtyStr,totStr));
+  });
+
+  push(thermalDiv());
+  push(thermalKV('SUBTOTAL','KES '+sale.sub.toLocaleString()));
+  push(thermalDiv('='));
+  push(thermalKV('TOTAL PAID','KES '+sale.tot.toLocaleString()));
+  push(thermalDiv('='));
+  push(thermalDiv());
+  push(thermalCentre('Thank you for your business!'));
+  push(thermalCentre('Your Packaging Partner'));
+  push('');
+  push('');
+  push('');
+
+  return lines.join('\n');
+}
+
+// Collect current receipt data from DOM / sale store
+function getCurrentSaleData(){
+  const receiptEl=document.querySelector('.rpmv');
+  const num=receiptEl?receiptEl.textContent.trim():'';
+  const dateEl=document.getElementById('r-date');
+  const payEl=document.getElementById('r-pay');
+  const subEl=document.getElementById('r-sub');
+  const totEl=document.getElementById('r-tot');
+  const cashierEl=document.querySelector('.rpmeta-i:nth-child(3) .rpmv');
+  // Parse items from DOM
+  const itemEls=document.querySelectorAll('#r-items .rpi');
+  const lines=[];
+  itemEls.forEach(el=>{
+    const name=el.querySelector('.rpin')?el.querySelector('.rpin').textContent.trim():'';
+    const qtyLine=el.querySelector('.rpiq')?el.querySelector('.rpiq').textContent.trim():'';
+    const totTxt=el.querySelector('.rpit')?el.querySelector('.rpit').textContent.trim():'';
+    // parse "× 2 @ KES 150"
+    const qm=qtyLine.match(/×\s*(\d+)\s*@\s*KES\s*([\d,]+)/);
+    const tm=totTxt.match(/KES\s*([\d,]+)/);
+    lines.push({
+      n:name,
+      qty:qm?parseInt(qm[1]):1,
+      r:qm?parseInt(qm[2].replace(/,/g,'')):0,
+      t:tm?parseInt(tm[1].replace(/,/g,'')):0
+    });
+  });
+  const sub=subEl?parseInt(subEl.textContent.replace(/[^0-9]/g,'')):0;
+  const tot=totEl?parseInt(totEl.textContent.replace(/[^0-9]/g,'')):0;
+  return{
+    num,
+    date:dateEl?dateEl.textContent.trim():new Date().toLocaleDateString('en-KE'),
+    pay:payEl?payEl.textContent.trim():'',
+    cashier:cashierEl?cashierEl.textContent.trim():'Staff',
+    sub,tot,lines
+  };
+}
+
+// ── PANEL OPEN / CLOSE ────────────────────────────────────
+// ── Is native Android bridge available? ───────────────────
+function hasAndroidBridge(){
+  return typeof window.Android !== 'undefined' && typeof window.Android.printText === 'function';
+}
+
+function openPrintPanel(){
+  const sale=getCurrentSaleData();
+  const txt=buildThermalReceipt(sale);
+  document.getElementById('thermal-preview').textContent=txt;
+  const panel=document.getElementById('thermal-panel');
+  panel.style.display='flex';
+  setTimeout(()=>panel.style.opacity='1',10);
+  updateBtUI();
+}
+function closePrintPanel(){
+  const panel=document.getElementById('thermal-panel');
+  panel.style.display='none';
+}
+
+// ── BT STATUS UI ──────────────────────────────────────────
+function updateBtUI(){
+  const dot=document.getElementById('bt-dot');
+  const txt=document.getElementById('bt-status-text');
+  const sub=document.getElementById('bt-status-sub');
+  const btn=document.getElementById('bt-main-btn');
+  const lbl=document.getElementById('bt-main-label');
+  const bar=document.getElementById('bt-status-bar');
+  if(!dot||!btn)return;
+
+  // ── Native Android bridge path ──
+  if(hasAndroidBridge()){
+    const connected = window.Android.isPrinterConnected();
+    const name      = window.Android.getPrinterName() || 'P58E';
+    if(connected){
+      dot.style.background='#22c55e';
+      bar.style.borderColor='#bbf7d0';bar.style.background='#f0fdf4';
+      txt.textContent='Connected — '+name;
+      sub.textContent='Ready to print';
+      btn.style.background='#16a34a';
+      lbl.textContent='Print Now';
+      btn.querySelector('span').textContent='🖨️';
+    } else {
+      dot.style.background='var(--g200)';
+      bar.style.borderColor='var(--g100)';bar.style.background='var(--g50)';
+      txt.textContent='Not connected';
+      sub.textContent='Tap to select your P58E printer';
+      btn.style.background='var(--green)';
+      lbl.textContent='Select Printer';
+      btn.querySelector('span').textContent='📡';
+    }
+    return;
+  }
+
+  // ── Web Bluetooth path (browser fallback) ──
+  if(THERMAL.connected && THERMAL.characteristic){
+    dot.style.background='#22c55e';
+    bar.style.borderColor='#bbf7d0';bar.style.background='#f0fdf4';
+    txt.textContent='Connected — '+(THERMAL.device?THERMAL.device.name:'P58E');
+    sub.textContent='Ready to print';
+    btn.style.background='#16a34a';
+    lbl.textContent='Print Now';
+    btn.querySelector('span').textContent='🖨️';
+  } else {
+    dot.style.background='var(--g200)';
+    bar.style.borderColor='var(--g100)';bar.style.background='var(--g50)';
+    txt.textContent='Not connected';
+    sub.textContent='Tap "Connect Printer" to pair your P58E';
+    btn.style.background='var(--green)';
+    lbl.textContent='Connect Printer';
+    btn.querySelector('span').textContent='📡';
+  }
+}
+
+// ── MAIN BUTTON ACTION ────────────────────────────────────
+async function thermalMainAction(){
+  // ── Native Android bridge ──
+  if(hasAndroidBridge()){
+    if(window.Android.isPrinterConnected()){
+      // Already connected — print immediately
+      const sale=getCurrentSaleData();
+      const txt=buildThermalReceipt(sale);
+      showToast('Sending to printer…','success');
+      window.Android.printText(txt);
+    } else {
+      // Open native printer picker
+      window.Android.selectPrinter();
+    }
+    return;
+  }
+  // ── Web Bluetooth fallback ──
+  if(THERMAL.connected && THERMAL.characteristic){
+    await sendThermalPrint();
+  } else {
+    await connectP58E();
+  }
+}
+
+// ── Callbacks from Android native bridge ─────────────────
+window.onNativePrintDone = function(success, msg){
+  if(typeof showToast==='function') showToast(msg, success?'success':'error');
+  if(success && typeof closePrintPanel==='function') setTimeout(closePrintPanel,1200);
+};
+window.onPrinterSelected = function(name){
+  if(typeof showToast==='function') showToast('Printer set: '+name,'success');
+  updateBtUI();
+};
+
+// ── BLUETOOTH CONNECT ─────────────────────────────────────
+async function connectP58E(){
+  if(!navigator.bluetooth){
+    showToast('Web Bluetooth not supported on this browser. Use the .txt download option.','error');
+    return;
+  }
+  const lbl=document.getElementById('bt-main-label');
+  const btn=document.getElementById('bt-main-btn');
+  try{
+    lbl.textContent='Scanning…';btn.disabled=true;
+    // SPP-compatible UUIDs that work with most 58mm printers
+    const SPP='00001101-0000-1000-8000-00805f9b34fb';
+    const device=await navigator.bluetooth.requestDevice({
+      acceptAllDevices:true,
+      optionalServices:[
+        SPP,
+        '000018f0-0000-1000-8000-00805f9b34fb', // common generic printer
+        '0000ff00-0000-1000-8000-00805f9b34fb',
+        '0000ffe0-0000-1000-8000-00805f9b34fb',
+      ]
+    });
+    lbl.textContent='Connecting…';
+    const server=await device.gatt.connect();
+    // Try known BLE printer service UUIDs in order
+    const serviceUUIDs=[
+      '000018f0-0000-1000-8000-00805f9b34fb',
+      '0000ff00-0000-1000-8000-00805f9b34fb',
+      '0000ffe0-0000-1000-8000-00805f9b34fb',
+      SPP
+    ];
+    let service=null, characteristic=null;
+    for(const uuid of serviceUUIDs){
+      try{
+        service=await server.getPrimaryService(uuid);
+        if(service)break;
+      }catch(e){}
+    }
+    if(!service){
+      // Last resort — get any available service
+      const svcs=await server.getPrimaryServices();
+      if(svcs.length)service=svcs[0];
+    }
+    if(!service)throw new Error('No printable service found on this device');
+    const chars=await service.getCharacteristics();
+    // Pick writable characteristic
+    for(const c of chars){
+      if(c.properties.write||c.properties.writeWithoutResponse){
+        characteristic=c;break;
+      }
+    }
+    if(!characteristic)throw new Error('No writable characteristic found');
+    THERMAL.device=device;
+    THERMAL.characteristic=characteristic;
+    THERMAL.connected=true;
+    device.addEventListener('gattserverdisconnected',()=>{
+      THERMAL.connected=false;THERMAL.characteristic=null;THERMAL.device=null;
+      showToast('Printer disconnected','error');
+      updateBtUI();
+    });
+    showToast('Printer connected: '+device.name,'success');
+    updateBtUI();
+  }catch(err){
+    THERMAL.connected=false;
+    if(err.name==='NotFoundError'||err.message.includes('cancelled')){
+      showToast('Pairing cancelled','error');
+    } else if(err.message.includes('No printable')||err.message.includes('No writable')){
+      showToast('P58E paired but Classic BT not supported by browser. Use .txt download + PrintHand app.','error');
+    } else {
+      showToast('Could not connect: '+err.message,'error');
+    }
+    lbl.textContent='Connect Printer';btn.disabled=false;
+    updateBtUI();
+  }
+  btn.disabled=false;
+}
+
+// ── SEND TO PRINTER ───────────────────────────────────────
+async function sendThermalPrint(){
+  const sale=getCurrentSaleData();
+  const txt=buildThermalReceipt(sale);
+  try{
+    const enc=new TextEncoder();
+    // ESC/POS init
+    const init=new Uint8Array(THERMAL.ESC_INIT);
+    await writeChunk(THERMAL.characteristic,init);
+    // Send text in 128-byte chunks (BLE MTU safe)
+    const bytes=enc.encode(txt+'\n');
+    const CHUNK=128;
+    for(let i=0;i<bytes.length;i+=CHUNK){
+      await writeChunk(THERMAL.characteristic,bytes.slice(i,i+CHUNK));
+      await delay(30);
+    }
+    // Feed and cut
+    const tail=new Uint8Array([...THERMAL.FEED3,...THERMAL.CUT]);
+    await writeChunk(THERMAL.characteristic,tail);
+    showToast('Receipt sent to P58E ✓','success');
+    setTimeout(()=>closePrintPanel(),1200);
+  }catch(err){
+    showToast('Print failed: '+err.message,'error');
+    THERMAL.connected=false;THERMAL.characteristic=null;
+    updateBtUI();
+  }
+}
+
+async function writeChunk(char,data){
+  if(char.properties.writeWithoutResponse){
+    await char.writeValueWithoutResponse(data);
+  } else {
+    await char.writeValue(data);
+  }
+}
+function delay(ms){return new Promise(r=>setTimeout(r,ms));}
+
+// ── DOWNLOAD .TXT FALLBACK ────────────────────────────────
+function downloadReceiptTxt(){
+  const sale=getCurrentSaleData();
+  const txt=buildThermalReceipt(sale);
+  const blob=new Blob([txt],{type:'text/plain'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='Pendo-'+( sale.num||'receipt').replace(/[^a-zA-Z0-9-]/g,'')+'.txt';
+  a.click();
+  showToast('Receipt downloaded — open with PrintHand to print','success');
+}
+
+// ── BROWSER PRINT ─────────────────────────────────────────
+function browserPrint(){
   const pa=document.getElementById('print-area');
   const rp=document.querySelector('.rp');
   if(!rp)return;
+  closePrintPanel();
   pa.innerHTML='';pa.className='receipt-print';
   const clone=rp.cloneNode(true);
   const acts=clone.querySelector('.rpacts');
   if(acts)acts.style.display='none';
   pa.appendChild(clone);pa.style.display='block';
   window.print();
-  setTimeout(()=>{pa.style.display='none';pa.innerHTML='';},800);
+  setTimeout(()=>{pa.style.display='none';pa.innerHTML='';},1000);
 }
+
+// Legacy alias (used by reprintSale path — now opens panel)
+function printReceipt(){ openPrintPanel(); }
 
 // ══ RECEIPT — SAVE AS PDF ══════════════════════════════
 async function saveReceiptPDF(){
